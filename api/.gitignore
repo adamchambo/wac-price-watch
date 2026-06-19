@@ -12,8 +12,9 @@ obj/
 .idea/
 
 # Local configuration and secrets
-appsettings.*.json
 !appsettings.json
+appsettings.json
+appsettings.Development.json
 .env
 .env.*
 
