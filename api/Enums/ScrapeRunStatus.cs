@@ -1,9 +1,10 @@
+namespace api.Enums;
 
 public enum ScrapeRunStatus
 {
     Queued,
     Running,
-    Suceeded,
+    Succeeded,
     Failed,
     Partial
 }

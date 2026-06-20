@@ -1,2 +1,6 @@
 plan.md
 planning
+
+# .NET build output
+api/bin/
+api/obj/

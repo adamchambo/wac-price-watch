@@ -1,3 +1,4 @@
+namespace api.Enums;
 
 public enum ThemePreference
 {

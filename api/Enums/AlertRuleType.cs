@@ -1,5 +1,6 @@
+namespace api.Enums;
 
-public enum AlertRule
+public enum AlertRuleType
 {
     PriceDrop,
     TargetPrice
