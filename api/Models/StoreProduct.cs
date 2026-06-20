@@ -12,7 +12,7 @@ public class StoreProduct
 
     public string? Brand { get; set; }
 
-    public string SizeLabel { get; set; } = string.Empty;
+    public string? SizeLabel { get; set; }
 
     public string? ImageUrl { get; set; }
 
