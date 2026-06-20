@@ -1,8 +1,8 @@
 using api.Enums;
 
-namespace api.DTOs.Products;
+namespace api.DTOs.Catalog;
 
-public record ProductDetailsResponse(
+public record CatalogProductDetailsResponse(
     Guid Id,
     Store Store,
     string Name,
@@ -12,6 +12,7 @@ public record ProductDetailsResponse(
     string ProductUrl,
     string? StoreSku,
     decimal? CurrentPrice,
+    bool IsOnSpecial,
     ProductStatus Status,
     DateTime? LastCheckedAt,
     IReadOnlyList<PriceSnapshotResponse> PriceHistory

@@ -1,4 +1,4 @@
-using api.DTOs.Products;
+using api.DTOs.Catalog;
 
 namespace api.DTOs.Watchlists;
 
@@ -6,7 +6,7 @@ public record WatchlistItemResponse(
     Guid Id,
     Guid BaseStoreProductId,
     string DisplayName,
-    ProductResponse BaseProduct,
+    CatalogProductResponse BaseProduct,
     IReadOnlyList<WatchlistItemMatchResponse> Matches,
     DateTime AddedAt
 );
@@ -14,6 +14,6 @@ public record WatchlistItemResponse(
 public record WatchlistItemMatchResponse(
     Guid Id,
     Guid StoreProductId,
-    ProductResponse Product,
+    CatalogProductResponse Product,
     DateTime CreatedAt
 );

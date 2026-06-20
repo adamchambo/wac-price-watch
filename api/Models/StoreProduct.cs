@@ -22,6 +22,8 @@ public class StoreProduct
 
     public decimal? CurrentPrice { get; set; }
 
+    public bool IsOnSpecial { get; set; }
+
     public ProductStatus Status { get; set; } = ProductStatus.Active;
 
     public bool IsRemoved { get; set; }

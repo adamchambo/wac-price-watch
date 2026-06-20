@@ -1,8 +1,8 @@
 using api.Enums;
 
-namespace api.DTOs.Products;
+namespace api.DTOs.Catalog;
 
-public record ProductResponse(
+public record CatalogProductResponse(
     Guid Id,
     Store Store,
     string Name,
@@ -10,6 +10,7 @@ public record ProductResponse(
     string? SizeLabel,
     string? ImageUrl,
     decimal? CurrentPrice,
+    bool IsOnSpecial,
     ProductStatus Status,
     bool IsWatchlisted
 );
