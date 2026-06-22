@@ -9,8 +9,12 @@ public interface ICatalogService
         Store store,
         string? searchTerm,
         int page,
-        int pageSize
+        int pageSize,
+        CancellationToken cancellationToken = default
     );
 
-    Task<CatalogProductDetailsResponse?> GetCatalogProductByIdAsync(Guid productId);
+    Task<CatalogProductDetailsResponse?> GetCatalogProductByIdAsync(
+        Guid productId,
+        CancellationToken cancellationToken = default
+    );
 }
