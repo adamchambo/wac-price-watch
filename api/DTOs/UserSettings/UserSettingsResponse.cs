@@ -6,8 +6,10 @@ public record UserSettingsResponse(
     Store DefaultStore,
     string Currency,
     PriceCheckFrequency? PriceCheckFrequency,
-    DateTime? PriceCheckStartAt,
+    TimeOnly? PriceCheckTimeOfDay,
     string? PriceCheckTimezone,
+    WeekDay? PriceCheckDayOfWeek,
+    string? BlockedPriceCheckDays,
     ThemePreference Theme,
     bool EmailAlertsEnabled,
     bool SmsAlertsEnabled

@@ -5,8 +5,10 @@ namespace api.DTOs.UserSettings;
 public record UpdateUserSettingsRequest(
     Store DefaultStore,
     PriceCheckFrequency? PriceCheckFrequency,
-    DateTime? PriceCheckStartAt,
+    TimeOnly? PriceCheckTimeOfDay,
     string? PriceCheckTimezone,
+    WeekDay? PriceCheckDayOfWeek,
+    string? BlockedPriceCheckDays,
     ThemePreference Theme,
     bool EmailAlertsEnabled,
     bool SmsAlertsEnabled

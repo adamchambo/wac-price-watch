@@ -1,3 +1,4 @@
+
 using api.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -6,12 +7,8 @@ namespace api.Data;
 
 public class AppDbContext : IdentityDbContext
 {
-    public AppDbContext(DbContextOptions<AppDbContext> options)
-        : base(options)
-    {
-    }
+    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options){}
 
-    public DbSet<StoreProfile> StoreProfiles => Set<StoreProfile>();
     public DbSet<UserSettings> UserSettings => Set<UserSettings>();
     public DbSet<StoreProduct> StoreProducts => Set<StoreProduct>();
     public DbSet<Watchlist> Watchlists => Set<Watchlist>();
@@ -26,14 +23,6 @@ public class AppDbContext : IdentityDbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-
-        modelBuilder.Entity<StoreProfile>()
-            .HasIndex(x => x.Store)
-            .IsUnique();
-
-        modelBuilder.Entity<StoreProfile>()
-            .HasIndex(x => x.SitemapUrl)
-            .IsUnique();
 
         modelBuilder.Entity<StoreProduct>()
             .HasIndex(x => x.ProductUrl)

@@ -9,3 +9,4 @@ public interface IWatchlistPriceCheckService
         CancellationToken cancellationToken = default
     );
 }
+    

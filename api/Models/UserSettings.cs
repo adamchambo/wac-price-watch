@@ -14,9 +14,13 @@ public class UserSettings
 
     public PriceCheckFrequency? PriceCheckFrequency { get; set; }
 
-    public DateTime? PriceCheckStartAt { get; set; }
+    public TimeOnly? PriceCheckTimeOfDay { get; set; }
 
     public string? PriceCheckTimezone { get; set; }
+
+    public WeekDay? PriceCheckDayOfWeek { get; set; }
+
+    public string? BlockedPriceCheckDays { get; set; }
 
     public ThemePreference Theme { get; set; } = ThemePreference.System;
 
