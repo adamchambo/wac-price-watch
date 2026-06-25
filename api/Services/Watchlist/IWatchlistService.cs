@@ -12,6 +12,12 @@ public interface IWatchlistService
         CancellationToken cancellationToken = default
     );
 
+    Task<WatchlistItemResponse> GetWatchlistItemAsync(
+        string userId,
+        Guid watchlistItemId,
+        CancellationToken cancellationToken = default
+    );
+
     Task<WatchlistItemResponse> AddWatchlistItemAsync(
         string userId,
         Store store,
