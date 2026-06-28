@@ -1,9 +1,9 @@
 using System.Security.Claims;
-using api.DTOs.Watchlists;
-using api.Enums;
-using api.Services.Watchlist;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using api.Services.Watchlist;
+using api.DTOs.Watchlists;
+using api.Enums;
 
 namespace api.Controllers;
 
