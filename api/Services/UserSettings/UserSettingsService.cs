@@ -2,7 +2,6 @@ using api.DTOs.UserSettings;
 using api.Data;
 using api.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 namespace api.Services.UserSettings;
 
 public class UserSettingsService : IUserSettingsService
