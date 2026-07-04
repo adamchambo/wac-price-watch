@@ -4,5 +4,5 @@ namespace api.Services.Catalog;
 
 public interface ICatalogSyncService
 {
-    Task<Guid> StartCatalogSyncAsync(Store store, CancellationToken cancellationToken = default);
+    Task<int> QueueCatalogSyncAsync(Store store, CancellationToken cancellationToken = default);
 }

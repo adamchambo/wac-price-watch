@@ -8,7 +8,7 @@ public class ScrapeTask
 
     public Guid ScrapeRunId { get; set; }
 
-    public Guid? StoreProductId { get; set; }
+    public Guid StoreProductId { get; set; }
 
     public string ProductUrl { get; set; } = string.Empty;
 

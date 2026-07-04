@@ -4,7 +4,7 @@ namespace api.Services.Watchlist;
 
 public interface IWatchlistPriceCheckService
 {
-    Task<Guid> StartWatchlistPriceCheckAsync(
+    Task<int> QueueWatchlistPriceCheckAsync(
         Store store,
         CancellationToken cancellationToken = default
     );

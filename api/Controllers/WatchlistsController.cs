@@ -22,6 +22,9 @@ public class WatchlistController : ControllerBase
     [HttpGet("{store}/items")]
     public async Task<ActionResult<WatchlistResponse>> GetWatchlist(
         [FromRoute] Store store,
+        [FromQuery] string? searchTerm,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
         CancellationToken cancellationToken = default
     )
     {
@@ -30,7 +33,10 @@ public class WatchlistController : ControllerBase
 
         var watchlsit = await _watchlistService.GetWatchlistAsync(
             userId, 
-            store, 
+            store,
+            searchTerm,
+            page,
+            pageSize,
             cancellationToken
         );
 

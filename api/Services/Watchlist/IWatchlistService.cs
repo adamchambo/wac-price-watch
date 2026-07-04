@@ -6,19 +6,22 @@ namespace api.Services.Watchlist;
 
 public interface IWatchlistService
 {
-    Task<WatchlistResponse> GetWatchlistAsync(
+    Task<WatchlistResponse?> GetWatchlistAsync(
         string userId,
         Store store,
+        string? searchTerm,
+        int page,
+        int pageNumber,
         CancellationToken cancellationToken = default
     );
 
-    Task<WatchlistItemResponse> GetWatchlistItemAsync(
+    Task<WatchlistItemResponse?> GetWatchlistItemAsync(
         string userId,
         Guid watchlistItemId,
         CancellationToken cancellationToken = default
     );
 
-    Task<WatchlistItemResponse> AddWatchlistItemAsync(
+    Task<WatchlistItemResponse?> AddWatchlistItemAsync(
         string userId,
         Store store,
         AddWatchlistItemRequest request,
