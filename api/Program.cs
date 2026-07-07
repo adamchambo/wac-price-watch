@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using api.Services.Catalog;
 using api.Services.Scraping;
-using api.Services.Sitemap;
 using api.Services.UserSettings;
 using api.Services.Watchlist;
 
@@ -26,7 +25,7 @@ builder.Services.AddScoped<ICatalogSyncService, CatalogSyncService>();
 builder.Services.AddScoped<IWatchlistService, WatchlistService>();
 builder.Services.AddScoped<IWatchlistPriceCheckService, WatchlistPriceCheckService>();
 
-// builder.Services.AddScoped<ISitemapService, SitemapService>();
+builder.Services.AddSitemapServices();
 builder.Services.AddScoped<IUserSettingsService, UserSettingsService>();
 
 builder.Services.AddScoped<IProductScrapeService, ProductScrapeService>();

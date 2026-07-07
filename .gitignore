@@ -3,5 +3,7 @@ planning
 .pnpm-store/
 
 # .NET build output
-api/bin/
-api/obj/
+**/bin/
+**/obj/
+TestResults/
+coverage/

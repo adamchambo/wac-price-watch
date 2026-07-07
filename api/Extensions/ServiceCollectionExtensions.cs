@@ -1,4 +1,5 @@
 using System.Net.Http.Headers;
+using api.Services.Sitemap;
 using api.Scraping;
 
 namespace api.Extensions;
@@ -12,6 +13,13 @@ public static class ServiceCollectionExtensions
         services.AddHttpClient<IStoreScraper, ColesScraper>(ConfigureStoreScraperHttpClient);
         services.AddHttpClient<IStoreScraper, WoolworthsScraper>(ConfigureStoreScraperHttpClient);
         services.AddHttpClient<IStoreScraper, AldiScraper>(ConfigureStoreScraperHttpClient);
+
+        return services;
+    }
+
+    public static IServiceCollection AddSitemapServices(this IServiceCollection services)
+    {
+        services.AddHttpClient<ISitemapService, SitemapService>(ConfigureStoreScraperHttpClient);
 
         return services;
     }
