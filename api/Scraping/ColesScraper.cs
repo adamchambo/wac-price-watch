@@ -26,7 +26,7 @@ public class ColesScraper : IStoreScraper
 
         var schemaJson = HtmlScrapingHelper.GetRequiredText(
             document,
-            "//script[@type='application/ld+json' and contains(., '\"@type\":\"Product\"')]",
+            "//script[@type='application/ld+json' and contains(., 'Product') and contains(., 'offers')]",
             "Coles"
         );
 

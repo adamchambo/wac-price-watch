@@ -148,8 +148,24 @@ public static class HtmlScrapingHelper
 
     public static decimal? GetOptionalJsonDecimal(JsonElement element, string propertyName)
     {
-        return element.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.Number
-            ? value.GetDecimal()
-            : null;
+        if (!element.TryGetProperty(propertyName, out var value))
+        {
+            return null;
+        }
+
+        if (value.ValueKind == JsonValueKind.Number)
+        {
+            return value.GetDecimal();
+        }
+
+        if (
+            value.ValueKind == JsonValueKind.String
+            && decimal.TryParse(value.GetString(), NumberStyles.Number, CultureInfo.InvariantCulture, out var price)
+        )
+        {
+            return price;
+        }
+
+        return null;
     }
 }

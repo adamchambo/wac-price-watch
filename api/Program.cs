@@ -1,4 +1,5 @@
 using api.Data;
+using api.Extensions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using api.Services.Catalog;
@@ -6,7 +7,6 @@ using api.Services.Scraping;
 using api.Services.Sitemap;
 using api.Services.UserSettings;
 using api.Services.Watchlist;
-using api.Scraping;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,11 +31,7 @@ builder.Services.AddScoped<IUserSettingsService, UserSettingsService>();
 
 builder.Services.AddScoped<IProductScrapeService, ProductScrapeService>();
 
-builder.Services.AddScoped<StoreScraperResolver>();
-
-builder.Services.AddScoped<IStoreScraper, ColesScraper>();
-builder.Services.AddScoped<IStoreScraper, WoolworthsScraper>();
-builder.Services.AddScoped<IStoreScraper, AldiScraper>();
+builder.Services.AddStoreScrapers();
 
 
 builder.Services.AddCors(options =>
