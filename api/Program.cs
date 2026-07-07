@@ -6,6 +6,7 @@ using api.Services.Scraping;
 using api.Services.Sitemap;
 using api.Services.UserSettings;
 using api.Services.Watchlist;
+using api.Scraping;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,13 +20,22 @@ builder.Services
     .AddIdentityApiEndpoints<IdentityUser>()
     .AddEntityFrameworkStores<AppDbContext>();
 
-// builder.Services.AddScoped<ICatalogService, CatalogService>();
-// builder.Services.AddScoped<ICatalogSyncService, CatalogSyncService>();
-// builder.Services.AddScoped<IWatchlistService, WatchlistService>();
-// builder.Services.AddScoped<IWatchlistPriceCheckService, WatchlistPriceCheckService>();
+builder.Services.AddScoped<ICatalogService, CatalogService>();
+builder.Services.AddScoped<ICatalogSyncService, CatalogSyncService>();
+
+builder.Services.AddScoped<IWatchlistService, WatchlistService>();
+builder.Services.AddScoped<IWatchlistPriceCheckService, WatchlistPriceCheckService>();
+
 // builder.Services.AddScoped<ISitemapService, SitemapService>();
-// builder.Services.AddScoped<IUserSettingsService, UserSettingsService>();
-// builder.Services.AddScoped<IProductScrapeService, ProductScrapeService>();
+builder.Services.AddScoped<IUserSettingsService, UserSettingsService>();
+
+builder.Services.AddScoped<IProductScrapeService, ProductScrapeService>();
+
+builder.Services.AddScoped<StoreScraperResolver>();
+
+builder.Services.AddScoped<IStoreScraper, ColesScraper>();
+builder.Services.AddScoped<IStoreScraper, WoolworthsScraper>();
+builder.Services.AddScoped<IStoreScraper, AldiScraper>();
 
 
 builder.Services.AddCors(options =>

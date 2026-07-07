@@ -3,7 +3,6 @@ namespace api.DTOs.Scraping;
 public record ScrapedStoreProduct(
     string Name,
     string? Brand,
-    string? SizeLabel,
     string? ImageUrl,
     string ProductUrl,
     string? StoreSku,
