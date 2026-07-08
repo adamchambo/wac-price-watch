@@ -1,13 +1,71 @@
 using System.Net.Http.Headers;
+using api.Data;
+using api.Options;
+using api.Services.Catalog;
+using api.Services.Scraping;
 using api.Services.Sitemap;
+using api.Services.UserSettings;
+using api.Services.Watchlist;
 using api.Scraping;
 using Hangfire;
 using Hangfire.PostgreSql;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 namespace api.Extensions;
 
 public static class ServiceCollectionExtensions
 {
+    public static IServiceCollection AddApplicationServices(
+        this IServiceCollection services,
+        IConfiguration configuration
+    )
+    {
+        services.AddControllers();
+        services.AddOpenApi();
+
+        services.AddDbContext<AppDbContext>(options =>
+            options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
+
+        services
+            .AddIdentityApiEndpoints<IdentityUser>()
+            .AddEntityFrameworkStores<AppDbContext>();
+
+        services.Configure<CatalogSyncOptions>(
+            configuration.GetSection("CatalogSync"));
+
+        services.AddScoped<ICatalogService, CatalogService>();
+        services.AddScoped<ICatalogSyncService, CatalogSyncService>();
+        services.AddScoped<IWatchlistService, WatchlistService>();
+        services.AddScoped<IWatchlistPriceCheckService, WatchlistPriceCheckService>();
+        services.AddScoped<IUserSettingsService, UserSettingsService>();
+        services.AddScoped<IProductScrapeService, ProductScrapeService>();
+
+        services.AddSitemapServices();
+        services.AddStoreScrapers();
+        services.AddBackgroundJobs(configuration);
+        services.AddFrontendCors();
+
+        return services;
+    }
+
+    private static IServiceCollection AddFrontendCors(this IServiceCollection services)
+    {
+        services.AddCors(options =>
+        {
+            options.AddPolicy("Frontend", policy =>
+            {
+                policy
+                    .WithOrigins("http://localhost:3000")
+                    .AllowAnyHeader()
+                    .AllowAnyMethod()
+                    .AllowCredentials();
+            });
+        });
+
+        return services;
+    }
+
     public static IServiceCollection AddBackgroundJobs(
         this IServiceCollection services,
         IConfiguration configuration

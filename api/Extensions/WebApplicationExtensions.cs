@@ -2,11 +2,32 @@ using api.Enums;
 using api.Services.Catalog;
 using api.Services.Watchlist;
 using Hangfire;
+using Microsoft.AspNetCore.Identity;
 
 namespace api.Extensions;
 
 public static class WebApplicationExtensions
 {
+    public static WebApplication UseApplicationPipeline(this WebApplication app)
+    {
+        if (app.Environment.IsDevelopment())
+        {
+            app.MapOpenApi();
+        }
+
+        app.UseHttpsRedirection();
+        app.UseCors("Frontend");
+        app.UseAuthentication();
+        app.UseAuthorization();
+
+        app.MapIdentityApi<IdentityUser>();
+        app.MapControllers();
+
+        app.UseBackgroundJobs();
+
+        return app;
+    }
+
     public static WebApplication UseBackgroundJobs(this WebApplication app)
     {
         if (app.Environment.IsDevelopment())
