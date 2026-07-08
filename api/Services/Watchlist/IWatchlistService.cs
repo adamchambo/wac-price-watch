@@ -28,6 +28,13 @@ public interface IWatchlistService
         CancellationToken cancellationToken = default
     );
 
+    Task<WatchlistItemResponse?> AddWatchlistItemByUrlAsync(
+        string userId,
+        Store store,
+        AddWatchlistItemByUrlRequest request,
+        CancellationToken cancellationToken = default
+    );
+
     Task RemoveWatchlistItemAsync(
         string userId,
         Guid watchlistItemId,

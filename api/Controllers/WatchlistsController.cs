@@ -82,6 +82,26 @@ public class WatchlistController : ControllerBase
         return Ok(item);
     }
 
+    [HttpPost("{store}/items/by-url")]
+    public async Task<ActionResult<WatchlistItemResponse>> AddWatchlistItemByUrl(
+        [FromRoute] Store store,
+        [FromBody] AddWatchlistItemByUrlRequest body,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId is null) return Unauthorized();
+
+        var item = await _watchlistService.AddWatchlistItemByUrlAsync(
+            userId,
+            store,
+            body,
+            cancellationToken
+        );
+
+        return Ok(item);
+    }
+
     [HttpDelete("items/{watchlistItemId:guid}")]
     public async Task<IActionResult> RemoveWatchlistItem(
         [FromRoute] Guid watchlistItemid,
@@ -100,4 +120,3 @@ public class WatchlistController : ControllerBase
         return NoContent();
     }
 }
-

@@ -2,6 +2,7 @@ using api.Data;
 using api.Extensions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using api.Options;
 using api.Services.Catalog;
 using api.Services.Scraping;
 using api.Services.UserSettings;
@@ -18,6 +19,9 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services
     .AddIdentityApiEndpoints<IdentityUser>()
     .AddEntityFrameworkStores<AppDbContext>();
+
+builder.Services.Configure<CatalogSyncOptions>(
+    builder.Configuration.GetSection("CatalogSync"));
 
 builder.Services.AddScoped<ICatalogService, CatalogService>();
 builder.Services.AddScoped<ICatalogSyncService, CatalogSyncService>();

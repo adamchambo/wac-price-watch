@@ -3,6 +3,8 @@ using api.Data;
 using api.DTOs.Watchlists;
 using api.Enums;
 using api.Mappers;
+using api.Models;
+using api.Scraping;
 using Microsoft.EntityFrameworkCore;
 
 namespace api.Services.Watchlist;
@@ -10,10 +12,15 @@ namespace api.Services.Watchlist;
 public class WatchlistService : IWatchlistService
 {
     private readonly AppDbContext _dbContext;
+    private readonly StoreScraperResolver _storeScraperResolver;
 
-    public WatchlistService(AppDbContext dbContext)
+    public WatchlistService(
+        AppDbContext dbContext,
+        StoreScraperResolver storeScraperResolver
+    )
     {
         _dbContext = dbContext;
+        _storeScraperResolver = storeScraperResolver;
     }
 
     public async Task<WatchlistResponse?> GetWatchlistAsync(
@@ -80,26 +87,9 @@ public class WatchlistService : IWatchlistService
     {
         ArgumentNullException.ThrowIfNull(request, nameof(request));
 
-        var watchlist = await _dbContext.Watchlists
-            .FirstOrDefaultAsync(w => w.UserId == userId && w.Store == store, cancellationToken);
+        var watchlist = await GetOrCreateWatchlistAsync(userId, store, cancellationToken);
 
-        if (watchlist is null)
-        {
-            watchlist = new Models.Watchlist
-            {
-                Id = Guid.NewGuid(),
-                UserId = userId,
-                Store = store,
-                Name = $"{store} Watchlist",
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            };
-
-            _dbContext.Watchlists.Add(watchlist);
-            await _dbContext.SaveChangesAsync(cancellationToken);
-        }
-
-        Models.WatchlistItem newItem = new Models.WatchlistItem
+        var newItem = new WatchlistItem
         {
             Id = Guid.NewGuid(),
             WatchlistId = watchlist.Id, // This should be the ID of the user's watchlist for the specified store
@@ -116,6 +106,92 @@ public class WatchlistService : IWatchlistService
         return WatchlistMapper.ToWatchlistItemResponse(newItem);
     }
 
+    public async Task<WatchlistItemResponse?> AddWatchlistItemByUrlAsync(
+        string userId,
+        Store store,
+        AddWatchlistItemByUrlRequest request,
+        CancellationToken cancellationToken = default
+    )
+    {
+        ArgumentNullException.ThrowIfNull(request, nameof(request));
+
+        if (string.IsNullOrWhiteSpace(request.ProductUrl))
+        {
+            throw new ArgumentException("ProductUrl is required.", nameof(request));
+        }
+
+        var now = DateTime.UtcNow;
+        var productUrl = request.ProductUrl.Trim();
+        var scraper = _storeScraperResolver.Resolve(store);
+        var scrapedProduct = await scraper.ScrapeProductAsync(productUrl);
+        var watchlist = await GetOrCreateWatchlistAsync(userId, store, cancellationToken);
+
+        var product = await _dbContext.StoreProducts
+            .FirstOrDefaultAsync(
+                p => p.Store == store && p.ProductUrl == productUrl,
+                cancellationToken
+            );
+
+        if (product is null)
+        {
+            product = new StoreProduct
+            {
+                Store = store,
+                ProductUrl = productUrl,
+                CreatedAt = now
+            };
+
+            _dbContext.StoreProducts.Add(product);
+        }
+
+        product.Name = scrapedProduct.Name;
+        product.Brand = scrapedProduct.Brand;
+        product.ImageUrl = scrapedProduct.ImageUrl;
+        product.StoreSku = scrapedProduct.StoreSku;
+        product.CurrentPrice = scrapedProduct.CurrentPrice;
+        product.IsOnSpecial = scrapedProduct.IsOnSpecial;
+        product.LastSyncedAt = scrapedProduct.ScrapedAt;
+        product.LastCheckedAt = scrapedProduct.ScrapedAt;
+        product.UpdatedAt = now;
+
+        await _dbContext.SaveChangesAsync(cancellationToken);
+
+        var watchlistItem = await _dbContext.WatchlistItems
+            .Include(item => item.BaseStoreProduct)
+            .FirstOrDefaultAsync(
+                item =>
+                    item.WatchlistId == watchlist.Id &&
+                    item.BaseStoreProductId == product.Id,
+                cancellationToken
+            );
+
+        if (watchlistItem is not null)
+        {
+            watchlistItem.RemovedAt = null;
+            watchlistItem.DisplayName = request.DisplayName ?? scrapedProduct.Name;
+            watchlistItem.BaseStoreProduct = product;
+
+            await _dbContext.SaveChangesAsync(cancellationToken);
+
+            return WatchlistMapper.ToWatchlistItemResponse(watchlistItem);
+        }
+
+        watchlistItem = new WatchlistItem
+        {
+            Id = Guid.NewGuid(),
+            WatchlistId = watchlist.Id,
+            BaseStoreProductId = product.Id,
+            BaseStoreProduct = product,
+            DisplayName = request.DisplayName ?? scrapedProduct.Name,
+            AddedAt = now
+        };
+
+        _dbContext.WatchlistItems.Add(watchlistItem);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+
+        return WatchlistMapper.ToWatchlistItemResponse(watchlistItem);
+    }
+
     public async Task RemoveWatchlistItemAsync(
         string userId,
         Guid watchlistItemId,
@@ -123,5 +199,35 @@ public class WatchlistService : IWatchlistService
     )
     {
         throw new NotImplementedException();
+    }
+
+    private async Task<Models.Watchlist> GetOrCreateWatchlistAsync(
+        string userId,
+        Store store,
+        CancellationToken cancellationToken
+    )
+    {
+        var watchlist = await _dbContext.Watchlists
+            .FirstOrDefaultAsync(w => w.UserId == userId && w.Store == store, cancellationToken);
+
+        if (watchlist is not null)
+        {
+            return watchlist;
+        }
+
+        watchlist = new Models.Watchlist
+        {
+            Id = Guid.NewGuid(),
+            UserId = userId,
+            Store = store,
+            Name = $"{store} Watchlist",
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+
+        _dbContext.Watchlists.Add(watchlist);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+
+        return watchlist;
     }
 }
