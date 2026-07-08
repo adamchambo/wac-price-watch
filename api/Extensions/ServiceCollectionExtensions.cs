@@ -1,11 +1,34 @@
 using System.Net.Http.Headers;
 using api.Services.Sitemap;
 using api.Scraping;
+using Hangfire;
+using Hangfire.PostgreSql;
 
 namespace api.Extensions;
 
 public static class ServiceCollectionExtensions
 {
+    public static IServiceCollection AddBackgroundJobs(
+        this IServiceCollection services,
+        IConfiguration configuration
+    )
+    {
+        var connectionString = configuration.GetConnectionString("DefaultConnection")
+            ?? throw new InvalidOperationException("DefaultConnection is required for Hangfire.");
+
+        services.AddHangfire(config =>
+        {
+            config.UsePostgreSqlStorage(options =>
+            {
+                options.UseNpgsqlConnection(connectionString);
+            });
+        });
+
+        services.AddHangfireServer();
+
+        return services;
+    }
+
     public static IServiceCollection AddStoreScrapers(this IServiceCollection services)
     {
         services.AddScoped<StoreScraperResolver>();

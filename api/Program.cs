@@ -35,6 +35,7 @@ builder.Services.AddScoped<IUserSettingsService, UserSettingsService>();
 builder.Services.AddScoped<IProductScrapeService, ProductScrapeService>();
 
 builder.Services.AddStoreScrapers();
+builder.Services.AddBackgroundJobs(builder.Configuration);
 
 
 builder.Services.AddCors(options =>
@@ -62,5 +63,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapIdentityApi<IdentityUser>();
 app.MapControllers();
+app.UseBackgroundJobs();
 
 app.Run();

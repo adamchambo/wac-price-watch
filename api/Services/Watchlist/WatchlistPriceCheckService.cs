@@ -56,6 +56,9 @@ public class WatchlistPriceCheckService : IWatchlistPriceCheckService
             UpdatedAt = now
         }).ToList();
 
+        _dbContext.ScrapeRuns.Add(scrapeRun);
+        _dbContext.ScrapeTasks.AddRange(scrapeTasks);
+
         await _dbContext.SaveChangesAsync(cancellationToken);
 
         foreach (var task in scrapeTasks)
