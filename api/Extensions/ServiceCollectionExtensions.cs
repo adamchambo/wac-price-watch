@@ -23,6 +23,8 @@ public static class ServiceCollectionExtensions
     {
         services.AddControllers();
         services.AddOpenApi();
+        services.AddHttpLogging();
+        services.AddProblemDetails();
 
         services.AddDbContext<AppDbContext>(options =>
             options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));

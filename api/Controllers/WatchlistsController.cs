@@ -1,9 +1,9 @@
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using api.Services.Watchlist;
 using api.DTOs.Watchlists;
 using api.Enums;
+using api.Extensions;
 
 namespace api.Controllers;
 
@@ -28,7 +28,7 @@ public class WatchlistController : ControllerBase
         CancellationToken cancellationToken = default
     )
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var userId = User.GetUserId();
         if (userId is null) return Unauthorized();
 
         var watchlsit = await _watchlistService.GetWatchlistAsync(
@@ -50,7 +50,7 @@ public class WatchlistController : ControllerBase
         CancellationToken cancellationToken = default
     )
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var userId = User.GetUserId();
         if (userId is null) return Unauthorized();
 
         var item = await _watchlistService.GetWatchlistItemAsync(
@@ -69,7 +69,7 @@ public class WatchlistController : ControllerBase
         CancellationToken cancellationToken = default
     )
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var userId = User.GetUserId();
         if (userId is null) return Unauthorized();
 
         var item = await _watchlistService.AddWatchlistItemAsync(
@@ -89,7 +89,7 @@ public class WatchlistController : ControllerBase
         CancellationToken cancellationToken = default
     )
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var userId = User.GetUserId();
         if (userId is null) return Unauthorized();
 
         var item = await _watchlistService.AddWatchlistItemByUrlAsync(
@@ -108,7 +108,7 @@ public class WatchlistController : ControllerBase
         CancellationToken cancellationToken = default
     )
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var userId = User.GetUserId();
         if (userId is null) return Unauthorized();
 
         await _watchlistService.RemoveWatchlistItemAsync(

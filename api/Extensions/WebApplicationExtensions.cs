@@ -15,7 +15,9 @@ public static class WebApplicationExtensions
             app.MapOpenApi();
         }
 
+        app.UseExceptionHandler();
         app.UseHttpsRedirection();
+        app.UseHttpLogging();
         app.UseCors("Frontend");
         app.UseAuthentication();
         app.UseAuthorization();
