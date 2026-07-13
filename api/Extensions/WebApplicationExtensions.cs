@@ -3,6 +3,7 @@ using api.Services.Catalog;
 using api.Services.Watchlist;
 using Hangfire;
 using Microsoft.AspNetCore.Identity;
+using Scalar.AspNetCore;
 
 namespace api.Extensions;
 
@@ -13,6 +14,7 @@ public static class WebApplicationExtensions
         if (app.Environment.IsDevelopment())
         {
             app.MapOpenApi();
+            app.MapScalarApiReference();
         }
 
         app.UseExceptionHandler();
@@ -37,34 +39,45 @@ public static class WebApplicationExtensions
             app.UseHangfireDashboard("/hangfire");
         }
 
+        var melbourneTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Australia/Melbourne");
+        var midnightMelbourne = new RecurringJobOptions
+        {
+            TimeZone = melbourneTimeZone
+        };
+
         RecurringJob.AddOrUpdate<ICatalogSyncService>(
             "catalog-sitemap-sync-coles",
             service => service.QueueCatalogSitemapSyncAsync(Store.Coles, CancellationToken.None),
-            Cron.Daily
+            Cron.Daily(0, 0),
+            midnightMelbourne
         );
 
         RecurringJob.AddOrUpdate<ICatalogSyncService>(
             "catalog-sitemap-sync-woolworths",
             service => service.QueueCatalogSitemapSyncAsync(Store.Woolworths, CancellationToken.None),
-            Cron.Daily
+            Cron.Daily(0, 0),
+            midnightMelbourne
         );
 
         RecurringJob.AddOrUpdate<IWatchlistPriceCheckService>(
             "watchlist-price-check-coles",
             service => service.QueueWatchlistPriceCheckAsync(Store.Coles, CancellationToken.None),
-            Cron.Hourly
+            Cron.Daily(0, 0),
+            midnightMelbourne
         );
 
         RecurringJob.AddOrUpdate<IWatchlistPriceCheckService>(
             "watchlist-price-check-woolworths",
             service => service.QueueWatchlistPriceCheckAsync(Store.Woolworths, CancellationToken.None),
-            Cron.Hourly
+            Cron.Daily(0, 0),
+            midnightMelbourne
         );
 
         RecurringJob.AddOrUpdate<IWatchlistPriceCheckService>(
             "watchlist-price-check-aldi",
             service => service.QueueWatchlistPriceCheckAsync(Store.Aldi, CancellationToken.None),
-            Cron.Hourly
+            Cron.Daily(0, 0),
+            midnightMelbourne
         );
 
         return app;

@@ -46,9 +46,8 @@ public class WatchlistService : IWatchlistService
 
         if (!string.IsNullOrEmpty(searchTerm))
         {
-            watchlist.Items = watchlist.Items
-                .Where(i => i.DisplayName.Contains(searchTerm))
-                .ToList();
+            itemsQuery = itemsQuery
+                .Where(i => i.DisplayName.Contains(searchTerm));
         }
 
         var items = await itemsQuery
@@ -68,7 +67,12 @@ public class WatchlistService : IWatchlistService
         CancellationToken cancellationToken = default
     )
     {
-        var watchlistItem = await _dbContext.WatchlistItems.Where(i => i.Id == watchlistItemId)
+        var watchlistItem = await _dbContext.WatchlistItems
+            .Where(i =>
+                i.Id == watchlistItemId &&
+                i.Watchlist!.UserId == userId &&
+                i.RemovedAt == null
+            )
             .Include(i => i.BaseStoreProduct)
             .Include(i => i.Matches)
                 .ThenInclude(m => m.StoreProduct)
@@ -198,7 +202,18 @@ public class WatchlistService : IWatchlistService
         CancellationToken cancellationToken = default
     )
     {
-        throw new NotImplementedException();
+        var watchlistItem = await _dbContext.WatchlistItems
+            .Where(i =>
+                i.Id == watchlistItemId &&
+                i.Watchlist!.UserId == userId &&
+                i.RemovedAt == null
+            )
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (watchlistItem is null) return;
+
+        watchlistItem.RemovedAt = DateTime.UtcNow;
+        await _dbContext.SaveChangesAsync(cancellationToken);
     }
 
     private async Task<Models.Watchlist> GetOrCreateWatchlistAsync(
