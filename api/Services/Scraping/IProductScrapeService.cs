@@ -7,4 +7,6 @@ public interface IProductScrapeService
         Guid scrapeTaskId,
         CancellationToken cancellationToken = default
     );
+
+    
 }

@@ -104,7 +104,7 @@ public class WatchlistController : ControllerBase
 
     [HttpDelete("items/{watchlistItemId:guid}")]
     public async Task<IActionResult> RemoveWatchlistItem(
-        [FromRoute] Guid watchlistItemid,
+        [FromRoute] Guid watchlistItemId,
         CancellationToken cancellationToken = default
     )
     {
@@ -113,7 +113,7 @@ public class WatchlistController : ControllerBase
 
         await _watchlistService.RemoveWatchlistItemAsync(
             userId,
-            watchlistItemid,
+            watchlistItemId,
             cancellationToken
         );
 

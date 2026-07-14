@@ -32,5 +32,5 @@ public class ScrapeTask
 
     public ScrapeRun? ScrapeRun { get; set; }
 
-    public StoreProduct? StoreProduct { get; set; }
+    public StoreProduct StoreProduct { get; set; } = null!;
 }
