@@ -2,25 +2,63 @@
 
 :root {
 	--radius: 0.5rem;
-	--background: #f5f7ef;
-	--foreground: #142017;
-	--card: #fffef8;
-	--card-foreground: #17201a;
-	--popover: #fffef8;
-	--popover-foreground: #17201a;
-	--primary: #257447;
-	--primary-foreground: #f7fff8;
-	--secondary: #dfeadb;
-	--secondary-foreground: #1e3526;
-	--muted: #e7ece2;
-	--muted-foreground: #5f6d62;
-	--accent: #e25d3f;
-	--accent-foreground: #fff7f2;
+	--background: #f8fafc;
+	--foreground: #0f172a;
+	--card: #ffffff;
+	--card-foreground: #0f172a;
+	--popover: #ffffff;
+	--popover-foreground: #0f172a;
+	--primary: #dc2626;
+	--primary-foreground: #ffffff;
+	--secondary: #f1f5f9;
+	--secondary-foreground: #1e293b;
+	--muted: #f1f5f9;
+	--muted-foreground: #64748b;
+	--accent: #fee2e2;
+	--accent-foreground: #991b1b;
 	--destructive: #b42318;
 	--destructive-foreground: #fff7f2;
-	--border: #cbd8c9;
-	--input: #cbd8c9;
-	--ring: #257447;
+	--border: #e2e8f0;
+	--input: #cbd5e1;
+	--ring: #dc2626;
+	--shell: #f8fafc;
+	--shell-header: #ffffffe6;
+}
+
+[data-store="coles"] {
+	--primary: #dc2626;
+	--primary-foreground: #ffffff;
+	--secondary: #fee2e2;
+	--secondary-foreground: #7f1d1d;
+	--accent: #fee2e2;
+	--accent-foreground: #991b1b;
+	--ring: #dc2626;
+	--shell: #f8fafc;
+	--shell-header: #ffffffe6;
+}
+
+[data-store="aldi"] {
+	--primary: #2563eb;
+	--primary-foreground: #ffffff;
+	--secondary: #dbeafe;
+	--secondary-foreground: #1e3a8a;
+	--accent: #dbeafe;
+	--accent-foreground: #1d4ed8;
+	--ring: #2563eb;
+	--shell: #f8fafc;
+	--shell-header: #ffffffe6;
+}
+
+[data-store="woolworths"] {
+	--primary: #16a34a;
+	--primary-foreground: #ffffff;
+	--secondary: #dcfce7;
+	--secondary-foreground: #14532d;
+	--accent: #dcfce7;
+	--accent-foreground: #166534;
+	--ring: #16a34a;
+	--shell: #f8fafc;
+	--shell-header: #ffffffe6;
 }
 
 @theme inline {
@@ -51,25 +89,57 @@
 }
 
 .dark {
-	--background: #101711;
-	--foreground: #f2f7ef;
-	--card: #162019;
-	--card-foreground: #f2f7ef;
-	--popover: #162019;
-	--popover-foreground: #f2f7ef;
-	--primary: #7bc69a;
-	--primary-foreground: #0f1a12;
-	--secondary: #223026;
-	--secondary-foreground: #e7f0e6;
-	--muted: #202b23;
-	--muted-foreground: #a9b7ab;
-	--accent: #f08a6a;
-	--accent-foreground: #23110b;
+	--background: #020617;
+	--foreground: #f8fafc;
+	--card: #0f172a;
+	--card-foreground: #f8fafc;
+	--popover: #0f172a;
+	--popover-foreground: #f8fafc;
+	--primary: #f87171;
+	--primary-foreground: #450a0a;
+	--secondary: #1e293b;
+	--secondary-foreground: #e2e8f0;
+	--muted: #1e293b;
+	--muted-foreground: #94a3b8;
+	--accent: #451a1a;
+	--accent-foreground: #fecaca;
 	--destructive: #ff806f;
 	--destructive-foreground: #2a0d09;
-	--border: #2d3a30;
-	--input: #2d3a30;
-	--ring: #7bc69a;
+	--border: #1e293b;
+	--input: #334155;
+	--ring: #f87171;
+	--shell: #020617;
+	--shell-header: #0f172ae6;
+}
+
+.dark [data-store="coles"] {
+	--primary: #f87171;
+	--primary-foreground: #450a0a;
+	--secondary: #451a1a;
+	--secondary-foreground: #fecaca;
+	--accent: #451a1a;
+	--accent-foreground: #fecaca;
+	--ring: #f87171;
+}
+
+.dark [data-store="aldi"] {
+	--primary: #60a5fa;
+	--primary-foreground: #082f49;
+	--secondary: #172554;
+	--secondary-foreground: #bfdbfe;
+	--accent: #172554;
+	--accent-foreground: #bfdbfe;
+	--ring: #60a5fa;
+}
+
+.dark [data-store="woolworths"] {
+	--primary: #4ade80;
+	--primary-foreground: #052e16;
+	--secondary: #14532d;
+	--secondary-foreground: #bbf7d0;
+	--accent: #14532d;
+	--accent-foreground: #bbf7d0;
+	--ring: #4ade80;
 }
 
 body {

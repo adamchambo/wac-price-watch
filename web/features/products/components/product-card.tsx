@@ -9,27 +9,27 @@ import { formatCurrency, storeNames, type CatalogProductMock } from "@/features/
 export function ProductCard({ product }: { product: CatalogProductMock }) {
 	return (
 		<Card className="overflow-hidden bg-card shadow-sm transition-colors hover:border-foreground/20">
-			<CardContent className="p-3">
+			<CardContent className="p-2">
 				<Link href={`/catalog/${product.routeId}`}>
 					<ProductImage imageKey={product.imageKey} alt={product.name} />
 				</Link>
-				<div className="mt-3 space-y-0.5">
-					<Link className="line-clamp-1 font-semibold leading-tight hover:text-primary" href={`/catalog/${product.routeId}`}>
+				<div className="mt-2 space-y-0.5">
+					<Link className="line-clamp-1 text-sm font-semibold leading-tight hover:text-primary" href={`/catalog/${product.routeId}`}>
 						{product.name}
 					</Link>
-					<p className="text-sm font-medium">{product.sizeLabel}</p>
-					<div className="flex items-end justify-between pt-2">
-						<p className="text-xl font-bold tracking-tight">{formatCurrency(product.currentPrice)}</p>
+					<p className="text-xs font-medium text-muted-foreground">{product.sizeLabel}</p>
+					<div className="flex items-end justify-between gap-2 pt-1">
+						<p className="text-lg font-semibold tracking-tight">{formatCurrency(product.currentPrice)}</p>
 						<p className="text-xs font-medium text-muted-foreground">{storeNames[product.store]}</p>
 					</div>
 				</div>
-				<div className="mt-3 flex items-center gap-2">
+				<div className="mt-2 flex items-center gap-2">
 					<Button
-						className="h-8 flex-1"
+						className="h-7 flex-1 px-2 text-xs"
 						variant={product.isWatchlisted ? "secondary" : "default"}
 						disabled={product.isWatchlisted}
 					>
-						{product.isWatchlisted ? <Check className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+						{product.isWatchlisted ? <Check className="h-3.5 w-3.5" /> : <Plus className="h-3.5 w-3.5" />}
 						{product.isWatchlisted ? "In Watchlist" : "Add"}
 					</Button>
 				</div>

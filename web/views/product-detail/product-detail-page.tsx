@@ -3,8 +3,8 @@ import { ArrowLeft, Check, ExternalLink, LinkIcon, Plus, Trash2 } from "lucide-r
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 import { PriceHistoryChart } from "@/features/products/components/price-history-chart";
-import { PriceStats } from "@/features/products/components/price-stats";
 import { ProductImage } from "@/features/products/components/product-image";
 import { StoreLogo } from "@/features/products/components/store-logo";
 import {
@@ -42,63 +42,62 @@ export function ProductDetailPage({
 	const average = prices.reduce((sum, price) => sum + price, 0) / prices.length;
 
 	return (
-		<div className="flex h-full flex-col gap-4 overflow-hidden pb-16 md:pb-0">
-			<Link className="inline-flex shrink-0 items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground" href={backHref}>
+		<div className="mx-auto max-w-7xl px-6 py-6 pb-16 lg:px-8 md:pb-6">
+			<Link className="mb-6 inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground" href={backHref}>
 				<ArrowLeft className="h-4 w-4" />
 				Back to {source === "watchlist" ? "watchlist" : "results"}
 			</Link>
-			<div className="min-h-0 flex-1 space-y-4 overflow-y-auto">
-				<Card>
-					<CardContent className="grid gap-5 p-4 md:grid-cols-[180px_1fr]">
-						<ProductImage
-							imageKey={product.imageKey}
-							alt={product.name}
-							className="h-44"
-						/>
-						<div className="flex min-w-0 flex-col gap-4">
-							<div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+			<div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
+				<Card className="h-fit self-start lg:col-span-8">
+					<CardContent className="p-6">
+						<div className="grid gap-6 md:grid-cols-[144px_minmax(0,1fr)_auto] md:items-start">
+							<ProductImage
+								imageKey={product.imageKey}
+								alt={product.name}
+								className="h-36"
+							/>
+							<div className="min-w-0 space-y-3">
 								<div className="min-w-0">
 									<p className={cn("text-sm font-medium", getStoreTheme(product.store).textClassName)}>
 										{storeNames[product.store]}
 									</p>
-									<h1 className="mt-1 text-2xl font-semibold tracking-tight">{product.name}</h1>
+									<h1 className="mt-1 text-xl font-semibold tracking-tight">{product.name}</h1>
 									<p className="mt-1 text-base text-muted-foreground">{product.sizeLabel}</p>
 								</div>
-								<div className="text-left md:text-right">
-									<p className="text-3xl font-semibold">{formatCurrency(product.currentPrice)}</p>
-									<p className="mt-1 text-sm text-muted-foreground">Last checked: 1 day ago</p>
-								</div>
+								<a
+									className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
+									href={details.productUrl}
+								>
+									<LinkIcon className="h-4 w-4" />
+									View on Coles
+									<ExternalLink className="h-4 w-4" />
+								</a>
 							</div>
-							<a
-								className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
-								href={details.productUrl}
-							>
-								<LinkIcon className="h-4 w-4" />
-								View on Coles
-								<ExternalLink className="h-4 w-4" />
-							</a>
-							<div className="flex flex-wrap items-center gap-2 pt-1">
+							<div className="flex flex-col items-start gap-3 md:items-end md:text-right">
+								<p className="text-3xl font-semibold leading-none">{formatCurrency(product.currentPrice)}</p>
+								<p className="text-sm text-muted-foreground">Checked 1 day ago</p>
 								{!watchlistItem ? (
-									<Button>
+									<Button size="sm">
 										<Check className="h-4 w-4" />
 										{product.isWatchlisted ? "In Watchlist" : "Add to watchlist"}
 									</Button>
 								) : (
-									<Button variant="destructive">
+									<Button size="sm" variant="destructive">
 										<Trash2 className="h-4 w-4" />
 										Delete from watchlist
 									</Button>
 								)}
-								{watchlistItem ? <p>Added to watchlist: 2 weeks ago</p> : null}
 							</div>
 						</div>
+						<Separator className="my-6" />
+						<PriceStatsGrid current={product.currentPrice} lowest={lowest} highest={highest} average={average} />
 					</CardContent>
 				</Card>
-				<Card>
-					<CardHeader className="pb-3">
-						<CardTitle>Store variants</CardTitle>
+				<Card className="h-fit self-start lg:col-span-4">
+					<CardHeader className="px-5 py-4">
+						<CardTitle className="text-base">Store variants</CardTitle>
 					</CardHeader>
-					<CardContent className="grid gap-3 md:grid-cols-3">
+					<CardContent className="grid gap-3 p-5 pt-0">
 						{productVariantStores.map((store) => {
 							const match = store === product.store ? undefined : store === stores.Aldi ? aldiMatch : woolworthsMatch;
 							const variantProduct = store === product.store ? product : match?.product;
@@ -115,9 +114,48 @@ export function ProductDetailPage({
 						})}
 					</CardContent>
 				</Card>
-				<PriceHistoryChart data={details.priceHistory} />
-				<PriceStats current={product.currentPrice} lowest={lowest} highest={highest} average={average} />
+				<PriceHistoryChart data={details.priceHistory} className="lg:col-span-12" />
 			</div>
+		</div>
+	);
+}
+
+function PriceStatsGrid({
+	current,
+	lowest,
+	highest,
+	average,
+}: {
+	current: number | string | null;
+	lowest: number;
+	highest: number;
+	average: number;
+}) {
+	const stats = [
+		{ label: "Current price", value: current },
+		{ label: "Lowest price", value: lowest, className: "text-primary" },
+		{ label: "Highest price", value: highest, className: "text-destructive" },
+		{ label: "Average price", value: average },
+	];
+
+	return (
+		<div className="grid grid-cols-2 overflow-hidden rounded-md border md:grid-cols-4">
+			{stats.map((stat, index) => (
+				<div
+					key={stat.label}
+					className={cn(
+						"p-3 text-center",
+						index % 2 === 1 && "border-l",
+						index > 1 && "border-t md:border-t-0",
+						index > 0 && "md:border-l",
+					)}
+				>
+					<p className="text-xs text-muted-foreground">{stat.label}</p>
+					<p className={cn("mt-1 text-lg font-semibold", stat.className)}>
+						{formatCurrency(stat.value)}
+					</p>
+				</div>
+			))}
 		</div>
 	);
 }
@@ -137,29 +175,23 @@ function ProductVariantCard({
 	const storeName = storeNames[store];
 
 	return (
-		<div className={cn("rounded-lg border p-4", product ? theme.className : "border-dashed bg-muted/30")}>
-			<div className="flex items-start justify-between gap-3">
+		<div className={cn("flex min-h-20 items-center justify-between gap-3 rounded-lg border p-4", isBase ? "bg-primary/10" : "bg-card")}>
+			<div className="flex items-center justify-between gap-3">
 				<div className="flex min-w-0 items-center gap-3">
 					<StoreLogo store={storeName} />
 					<div className="min-w-0">
-						<p className="font-medium">{storeName}</p>
-						<p className="text-xs text-muted-foreground">{isBase ? "Source product" : match ? "Matched variant" : "No variant added"}</p>
+						<p className="font-medium leading-tight">{storeName}</p>
+						<p className="text-sm text-muted-foreground">{isBase ? "Source product" : match ? "Matched variant" : "No match added"}</p>
 					</div>
 				</div>
-				{product ? <p className="shrink-0 text-sm font-semibold">{formatCurrency(product.currentPrice)}</p> : null}
 			</div>
 			{product ? (
-				<p className="mt-4 line-clamp-2 text-sm">
-					{product.name} {product.sizeLabel}
-				</p>
+				<p className={cn("shrink-0 text-sm font-semibold", isBase && theme.textClassName)}>{formatCurrency(product.currentPrice)}</p>
 			) : (
-				<div className="mt-4 space-y-3">
-					<p className="text-sm text-muted-foreground">Add this store&apos;s matching product to compare prices.</p>
-					<Button size="sm" variant="outline">
-						<Plus className="h-4 w-4" />
-						Find match
-					</Button>
-				</div>
+				<Button size="sm" variant="outline">
+					<Plus className="h-4 w-4" />
+					Find match
+				</Button>
 			)}
 		</div>
 	);

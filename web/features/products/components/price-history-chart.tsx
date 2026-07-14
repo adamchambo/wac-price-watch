@@ -1,28 +1,41 @@
 "use client";
 
-import { Line, LineChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import { CartesianGrid, Line, LineChart, Tooltip, XAxis, YAxis } from "recharts";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ChartContainer, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { formatCurrency } from "@/features/products/lib/mock-data";
+import { cn } from "@/lib/utils";
+
+const chartConfig = {
+	price: {
+		label: "Price",
+		color: "var(--primary)",
+	},
+} satisfies ChartConfig;
 
 export function PriceHistoryChart({
 	data,
+	className,
 }: {
 	data: Array<{ capturedAt: string; price: number | string | null }>;
+	className?: string;
 }) {
 	const chartData = data.map((point) => ({
 		month: new Intl.DateTimeFormat("en-AU", { month: "short", year: "2-digit" }).format(
 			new Date(point.capturedAt),
 		),
 		price: Number(point.price ?? 0),
+		priceLabel: formatCurrency(point.price),
 	}));
 
 	return (
-		<Card>
-			<CardHeader className="flex-row items-center justify-between py-4">
+		<Card className={cn("flex flex-col", className)}>
+			<CardHeader className="flex-row items-center justify-between px-4 py-3">
 				<CardTitle>Price history</CardTitle>
 				<Select defaultValue="1y">
-					<SelectTrigger className="w-28">
+					<SelectTrigger className="h-8 w-28">
 						<SelectValue />
 					</SelectTrigger>
 					<SelectContent>
@@ -32,32 +45,40 @@ export function PriceHistoryChart({
 					</SelectContent>
 				</Select>
 			</CardHeader>
-			<CardContent>
-				<LineChart
-					accessibilityLayer
-					data={chartData}
-					height={230}
-					margin={{ left: 8, right: 16, top: 12, bottom: 8 }}
-					width={760}
-					className="max-w-full"
-				>
-					<CartesianGrid strokeDasharray="3 3" vertical={false} />
-					<XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={10} />
-					<YAxis
-						tickFormatter={(value) => `$${Number(value).toFixed(2)}`}
-						tickLine={false}
-						axisLine={false}
-						tickMargin={10}
-					/>
-					<Line
-						type="monotone"
-						dataKey="price"
-						stroke="var(--primary)"
-						strokeWidth={2}
-						dot={{ r: 4, fill: "var(--primary)" }}
-						activeDot={{ r: 6 }}
-					/>
-				</LineChart>
+			<CardContent className="px-3 pb-4 pt-0">
+				<ChartContainer config={chartConfig} className="h-[300px] w-full">
+					<LineChart
+						accessibilityLayer
+						data={chartData}
+						margin={{ left: 8, right: 16, top: 16, bottom: 8 }}
+					>
+						<CartesianGrid stroke="var(--border)" vertical={false} />
+						<XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} />
+						<YAxis
+							tickFormatter={(value) => formatCurrency(value)}
+							tickLine={false}
+							axisLine={false}
+							tickMargin={8}
+							width={56}
+						/>
+						<Tooltip
+							cursor={false}
+							content={
+								<ChartTooltipContent
+									className="[&_[class*=font-mono]]:before:content-['$']"
+								/>
+							}
+						/>
+						<Line
+							type="monotone"
+							dataKey="price"
+							stroke="var(--color-price)"
+							strokeWidth={2}
+							dot={false}
+							activeDot={{ r: 4, fill: "var(--primary)", stroke: "var(--background)", strokeWidth: 2 }}
+						/>
+					</LineChart>
+				</ChartContainer>
 			</CardContent>
 		</Card>
 	);

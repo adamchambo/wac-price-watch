@@ -7,6 +7,7 @@ import { Bell, Heart, Search, Settings } from "lucide-react";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useSelectedStore, type StoreSlug } from "@/features/stores/store-context";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -18,10 +19,11 @@ const navItems = [
 
 export function AppShell({ children }: Readonly<{ children: React.ReactNode }>) {
 	const pathname = usePathname();
+	const { selectedStore, selectedStoreTheme, setSelectedStore } = useSelectedStore();
 
 	return (
-		<div className="min-h-screen overflow-hidden bg-[linear-gradient(135deg,#eef5e9_0%,#f9f5ea_42%,#f4f7ef_100%)] text-foreground">
-			<header className="sticky top-0 z-40 border-b border-primary/15 bg-[#fffdf4]/95 shadow-sm backdrop-blur">
+		<div data-store={selectedStore} style={selectedStoreTheme} className="min-h-screen bg-[var(--shell)] text-foreground">
+			<header className="sticky top-0 z-40 border-b border-border bg-[var(--shell-header)] shadow-sm backdrop-blur">
 				<div className="mx-auto flex h-14 max-w-7xl items-center gap-6 px-4 sm:px-6">
 					<Link className="flex items-center gap-3" href="/catalog">
 						<Image src="/wac-logo.png" alt="WAC Price Watch" width={30} height={30} />
@@ -42,7 +44,7 @@ export function AppShell({ children }: Readonly<{ children: React.ReactNode }>) 
 						))}
 					</nav>
 					<div className="ml-auto flex items-center gap-3">
-						<Select defaultValue="coles">
+						<Select value={selectedStore} onValueChange={(value) => setSelectedStore(value as StoreSlug)}>
 							<SelectTrigger className="w-28">
 								<SelectValue />
 							</SelectTrigger>
@@ -58,7 +60,7 @@ export function AppShell({ children }: Readonly<{ children: React.ReactNode }>) 
 					</div>
 				</div>
 			</header>
-			<main className="mx-auto h-[calc(100dvh-3.5rem)] max-w-7xl overflow-hidden px-4 py-4 sm:px-6">
+			<main className="mx-auto min-h-[calc(100dvh-3.5rem)] max-w-7xl px-4 py-4 pb-20 sm:px-6 md:pb-4">
 				{children}
 			</main>
 			<nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-card md:hidden">

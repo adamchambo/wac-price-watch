@@ -23,9 +23,9 @@ export function PriceStats({
 	return (
 		<Card className="grid divide-y divide-border sm:grid-cols-4 sm:divide-x sm:divide-y-0">
 			{stats.map((stat) => (
-				<div key={stat.label} className="p-5 text-center">
-					<p className="text-sm text-muted-foreground">{stat.label}</p>
-					<p className={cn("mt-2 text-xl font-semibold", stat.className)}>
+				<div key={stat.label} className="p-3 text-center">
+					<p className="text-xs text-muted-foreground">{stat.label}</p>
+					<p className={cn("mt-1 text-lg font-semibold", stat.className)}>
 						{formatCurrency(stat.value)}
 					</p>
 				</div>
