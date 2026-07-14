@@ -1,3 +1,3 @@
-export default function WatchlistsPage() {
-	return null;
-}
+import { WatchlistOverviewPage } from "@/views/watchlist-overview/watchlist-overview-page";
+
+export default WatchlistOverviewPage;

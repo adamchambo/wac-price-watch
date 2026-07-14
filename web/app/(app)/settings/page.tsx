@@ -1,3 +1,3 @@
-export default function SettingsPage() {
-	return null;
-}
+import { SettingsPage } from "@/views/settings/settings-page";
+
+export default SettingsPage;
