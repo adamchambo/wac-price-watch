@@ -1,5 +1,3 @@
-import { ProductDetailPage } from "@/views/product-detail/product-detail-page";
-
 export default async function CatalogProductPage({
 	params,
 }: {
@@ -7,5 +5,5 @@ export default async function CatalogProductPage({
 }) {
 	const { productId } = await params;
 
-	return <ProductDetailPage routeId={productId} source="catalog" />;
+	return <main>Product detail redesign pending for {productId}.</main>;
 }

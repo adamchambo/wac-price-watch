@@ -1,3 +1,3 @@
-import { LoginPage } from "@/features/auth/pages/login-page";
-
-export default LoginPage;
+export default function LoginPage() {
+	return <main>Login page redesign pending.</main>;
+}

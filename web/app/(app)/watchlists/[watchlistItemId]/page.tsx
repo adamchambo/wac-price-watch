@@ -1,5 +1,3 @@
-import { ProductDetailPage } from "@/views/product-detail/product-detail-page";
-
 export default async function WatchlistItemPage({
 	params,
 }: {
@@ -7,5 +5,5 @@ export default async function WatchlistItemPage({
 }) {
 	const { watchlistItemId } = await params;
 
-	return <ProductDetailPage routeId={watchlistItemId} source="watchlist" />;
+	return <main>Watchlist item redesign pending for {watchlistItemId}.</main>;
 }

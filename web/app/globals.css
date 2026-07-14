@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+/* UI shell and page styling are intentionally minimal until the redesign is complete. */
+
 :root {
 	--radius: 0.5rem;
 	--background: #f5f7ef;
