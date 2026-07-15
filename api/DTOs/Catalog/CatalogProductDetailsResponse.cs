@@ -11,6 +11,8 @@ public record CatalogProductDetailsResponse(
     string? ImageUrl,
     string ProductUrl,
     string? StoreSku,
+    CatalogCategoryResponse? Category,
+    IReadOnlyList<CatalogCategoryResponse> CategoryTrail,
     decimal? CurrentPrice,
     bool IsOnSpecial,
     ProductStatus Status,

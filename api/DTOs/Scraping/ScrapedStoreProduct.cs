@@ -6,6 +6,7 @@ public record ScrapedStoreProduct(
     string? ImageUrl,
     string ProductUrl,
     string? StoreSku,
+    IReadOnlyList<string> CategoryTrail,
     decimal? CurrentPrice,
     bool IsOnSpecial,
     bool IsAvailable,

@@ -336,6 +336,36 @@ namespace api.Migrations
                     b.ToTable("PriceSnapshots");
                 });
 
+            modelBuilder.Entity("api.Models.ProductCategory", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("NormalizedName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("ParentCategoryId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Store")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ParentCategoryId");
+
+                    b.HasIndex("Store", "ParentCategoryId", "NormalizedName")
+                        .IsUnique();
+
+                    b.ToTable("ProductCategories");
+                });
+
             modelBuilder.Entity("api.Models.ScrapeRun", b =>
                 {
                     b.Property<Guid>("Id")
@@ -504,6 +534,27 @@ namespace api.Migrations
                         .IsUnique();
 
                     b.ToTable("StoreProducts");
+                });
+
+            modelBuilder.Entity("api.Models.StoreProductCategory", b =>
+                {
+                    b.Property<Guid>("StoreProductId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ProductCategoryId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Depth")
+                        .HasColumnType("integer");
+
+                    b.HasKey("StoreProductId", "ProductCategoryId");
+
+                    b.HasIndex("ProductCategoryId");
+
+                    b.HasIndex("StoreProductId", "Depth")
+                        .IsUnique();
+
+                    b.ToTable("StoreProductCategories");
                 });
 
             modelBuilder.Entity("api.Models.UserSettings", b =>
@@ -744,6 +795,15 @@ namespace api.Migrations
                     b.Navigation("StoreProduct");
                 });
 
+            modelBuilder.Entity("api.Models.ProductCategory", b =>
+                {
+                    b.HasOne("api.Models.ProductCategory", "ParentCategory")
+                        .WithMany("ChildCategories")
+                        .HasForeignKey("ParentCategoryId");
+
+                    b.Navigation("ParentCategory");
+                });
+
             modelBuilder.Entity("api.Models.ScrapeTask", b =>
                 {
                     b.HasOne("api.Models.ScrapeRun", "ScrapeRun")
@@ -759,6 +819,25 @@ namespace api.Migrations
                         .IsRequired();
 
                     b.Navigation("ScrapeRun");
+
+                    b.Navigation("StoreProduct");
+                });
+
+            modelBuilder.Entity("api.Models.StoreProductCategory", b =>
+                {
+                    b.HasOne("api.Models.ProductCategory", "ProductCategory")
+                        .WithMany("StoreProductCategories")
+                        .HasForeignKey("ProductCategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("api.Models.StoreProduct", "StoreProduct")
+                        .WithMany("Categories")
+                        .HasForeignKey("StoreProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ProductCategory");
 
                     b.Navigation("StoreProduct");
                 });
@@ -808,8 +887,17 @@ namespace api.Migrations
                     b.Navigation("Tasks");
                 });
 
+            modelBuilder.Entity("api.Models.ProductCategory", b =>
+                {
+                    b.Navigation("ChildCategories");
+
+                    b.Navigation("StoreProductCategories");
+                });
+
             modelBuilder.Entity("api.Models.StoreProduct", b =>
                 {
+                    b.Navigation("Categories");
+
                     b.Navigation("PriceSnapshots");
 
                     b.Navigation("ScrapeTasks");

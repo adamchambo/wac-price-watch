@@ -53,4 +53,6 @@ public class StoreProduct
     public List<PriceSnapshot> PriceSnapshots { get; set; } = [];
 
     public List<ScrapeTask> ScrapeTasks { get; set; } = [];
+
+    public List<StoreProductCategory> Categories { get; set; } = [];
 }

@@ -39,6 +39,7 @@ public class ColesScraper : IStoreScraper
         var imageUrl = HtmlScrapingHelper.GetRequiredJsonString(product, "image", "Coles");
         var currentPrice = HtmlScrapingHelper.GetOptionalJsonDecimal(offers, "price");
         var availability = HtmlScrapingHelper.GetOptionalJsonString(offers, "availability");
+        var categoryTrail = GetCategoryTrail(document);
 
         return new ScrapedStoreProduct(
             name,
@@ -46,11 +47,66 @@ public class ColesScraper : IStoreScraper
             imageUrl,
             productUrl,
             HtmlScrapingHelper.GetOptionalJsonValueAsString(product, "sku"),
+            categoryTrail,
             currentPrice,
             IsOnSpecial(document),
             availability?.Contains("InStock", StringComparison.OrdinalIgnoreCase) == true,
             DateTime.UtcNow
         );
+    }
+
+    private static IReadOnlyList<string> GetCategoryTrail(HtmlDocument document)
+    {
+        var jsonLdTrail = GetCategoryTrailFromJsonLd(document);
+
+        if (jsonLdTrail.Count > 0)
+        {
+            return jsonLdTrail;
+        }
+
+        return document.DocumentNode
+            .SelectNodes("//*[@data-testid='breadcrumbs']//*[@itemprop='name']")
+            ?.Select(node => HtmlEntity.DeEntitize(node.InnerText).Trim())
+            .Where(IsColesCategoryCrumb)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList()
+            ?? [];
+    }
+
+    private static IReadOnlyList<string> GetCategoryTrailFromJsonLd(HtmlDocument document)
+    {
+        var schemaJson = HtmlScrapingHelper.GetOptionalText(
+            document,
+            "//script[@type='application/ld+json' and contains(., 'BreadcrumbList')]"
+        );
+
+        if (string.IsNullOrWhiteSpace(schemaJson))
+        {
+            return [];
+        }
+
+        using var schemaDocument = JsonDocument.Parse(schemaJson);
+        var root = schemaDocument.RootElement;
+
+        if (!root.TryGetProperty("itemListElement", out var items) || items.ValueKind != JsonValueKind.Array)
+        {
+            return [];
+        }
+
+        return items
+            .EnumerateArray()
+            .Select(item => HtmlScrapingHelper.GetOptionalJsonString(item, "name"))
+            .OfType<string>()
+            .Where(IsColesCategoryCrumb)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+    }
+
+    private static bool IsColesCategoryCrumb(string? value)
+    {
+        return !string.IsNullOrWhiteSpace(value)
+            && !value.Equals("Home", StringComparison.OrdinalIgnoreCase)
+            && !value.Equals("All categories", StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool IsOnSpecial(HtmlDocument document)

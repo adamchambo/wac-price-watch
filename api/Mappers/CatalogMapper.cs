@@ -17,6 +17,8 @@ public static class CatalogMapper
             product.Brand,
             product.SizeLabel,
             product.ImageUrl,
+            GetLeafCategory(product),
+            GetCategoryTrail(product),
             product.CurrentPrice,
             product.IsOnSpecial,
             product.Status,
@@ -35,6 +37,8 @@ public static class CatalogMapper
             product.ImageUrl,
             product.ProductUrl,
             product.StoreSku,
+            GetLeafCategory(product),
+            GetCategoryTrail(product),
             product.CurrentPrice,
             product.IsOnSpecial,
             product.Status,
@@ -43,6 +47,31 @@ public static class CatalogMapper
                 .OrderByDescending(snapshot => snapshot.CapturedAt)
                 .Select(ToPriceSnapshotResponse)
                 .ToList()
+        );
+    }
+
+    private static CatalogCategoryResponse? GetLeafCategory(StoreProduct product)
+    {
+        return product.Categories
+            .OrderByDescending(category => category.Depth)
+            .Select(ToCatalogCategoryResponse)
+            .FirstOrDefault();
+    }
+
+    private static IReadOnlyList<CatalogCategoryResponse> GetCategoryTrail(StoreProduct product)
+    {
+        return product.Categories
+            .OrderBy(category => category.Depth)
+            .Select(ToCatalogCategoryResponse)
+            .ToList();
+    }
+
+    private static CatalogCategoryResponse ToCatalogCategoryResponse(StoreProductCategory category)
+    {
+        return new CatalogCategoryResponse(
+            category.ProductCategoryId,
+            category.ProductCategory?.Name ?? string.Empty,
+            category.Depth
         );
     }
 

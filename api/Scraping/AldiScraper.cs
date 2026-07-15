@@ -36,18 +36,76 @@ public class AldiScraper : IStoreScraper
         var brand = HtmlScrapingHelper.GetRequiredJsonObject(product, "brand", "Aldi");
         var priceText = HtmlScrapingHelper.GetOptionalJsonString(offers, "price");
 
+        var name = HtmlScrapingHelper.GetRequiredJsonString(product, "name", "Aldi");
+
         return new ScrapedStoreProduct(
-            HtmlScrapingHelper.GetRequiredJsonString(product, "name", "Aldi"),
+            name,
             HtmlScrapingHelper.GetOptionalJsonString(brand, "name"),
             GetRequiredImageUrl(product),
             productUrl,
             ExtractSkuFromUrl(productUrl),
+            GetCategoryTrail(document, name),
             HtmlScrapingHelper.ParseCurrency(priceText, "Aldi"),
             false,
             HtmlScrapingHelper.GetOptionalJsonString(offers, "availability")
                 ?.Contains("InStock", StringComparison.OrdinalIgnoreCase) == true,
             DateTime.UtcNow
         );
+    }
+
+    private static IReadOnlyList<string> GetCategoryTrail(HtmlDocument document, string productName)
+    {
+        var jsonLdTrail = GetCategoryTrailFromJsonLd(document, productName);
+
+        if (jsonLdTrail.Count > 0)
+        {
+            return jsonLdTrail;
+        }
+
+        return document.DocumentNode
+            .SelectNodes("//*[contains(concat(' ', normalize-space(@class), ' '), ' breadcrumbs__item ')]")
+            ?.Select(node => HtmlEntity.DeEntitize(node.InnerText).Trim())
+            .Where(value => IsAldiCategoryCrumb(value, productName))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList()
+            ?? [];
+    }
+
+    private static IReadOnlyList<string> GetCategoryTrailFromJsonLd(HtmlDocument document, string productName)
+    {
+        var schemaJson = HtmlScrapingHelper.GetOptionalText(
+            document,
+            "//script[@type='application/ld+json' and contains(., 'BreadcrumbList')]"
+        );
+
+        if (string.IsNullOrWhiteSpace(schemaJson))
+        {
+            return [];
+        }
+
+        using var schemaDocument = JsonDocument.Parse(schemaJson);
+        var root = schemaDocument.RootElement;
+
+        if (!root.TryGetProperty("itemListElement", out var items) || items.ValueKind != JsonValueKind.Array)
+        {
+            return [];
+        }
+
+        return items
+            .EnumerateArray()
+            .Select(item => HtmlScrapingHelper.GetOptionalJsonString(item, "name"))
+            .OfType<string>()
+            .Where(value => IsAldiCategoryCrumb(value, productName))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+    }
+
+    private static bool IsAldiCategoryCrumb(string? value, string productName)
+    {
+        return !string.IsNullOrWhiteSpace(value)
+            && !value.Equals("Home", StringComparison.OrdinalIgnoreCase)
+            && !value.Equals("Products", StringComparison.OrdinalIgnoreCase)
+            && !value.Equals(productName, StringComparison.OrdinalIgnoreCase);
     }
 
     private static string GetRequiredImageUrl(JsonElement product)

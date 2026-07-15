@@ -22,6 +22,8 @@ public class CatalogService : ICatalogService
     )
     {
         var query = _dbContext.StoreProducts
+            .Include(p => p.Categories)
+                .ThenInclude(category => category.ProductCategory)
             .Where(p => p.Store == store && !p.IsRemoved);
 
         if (!string.IsNullOrEmpty(searchTerm))
@@ -44,7 +46,10 @@ public class CatalogService : ICatalogService
     )
     {
         var productDetail = await _dbContext.StoreProducts
-        .FirstOrDefaultAsync(p => p.Id == productId);
+            .Include(p => p.Categories)
+                .ThenInclude(category => category.ProductCategory)
+            .Include(p => p.PriceSnapshots)
+            .FirstOrDefaultAsync(p => p.Id == productId, cancellationToken);
         
         if (productDetail is null) return null;
         return CatalogMapper.ToCatalogProductDetailsResponse(productDetail);

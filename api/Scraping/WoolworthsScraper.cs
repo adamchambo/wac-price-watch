@@ -39,6 +39,7 @@ public class WoolworthsScraper : IStoreScraper
         var imageUrl = HtmlScrapingHelper.GetRequiredJsonString(product, "image", "Woolworths");
         var currentPrice = HtmlScrapingHelper.GetOptionalJsonDecimal(offers, "price");
         var availability = HtmlScrapingHelper.GetOptionalJsonString(offers, "availability");
+        var categoryTrail = GetCategoryTrail(document, name);
 
         return new ScrapedStoreProduct(
             name,
@@ -46,11 +47,69 @@ public class WoolworthsScraper : IStoreScraper
             imageUrl,
             productUrl,
             HtmlScrapingHelper.GetOptionalJsonString(product, "sku"),
+            categoryTrail,
             currentPrice,
             IsOnSpecial(document),
             availability?.Contains("InStock", StringComparison.OrdinalIgnoreCase) == true,
             DateTime.UtcNow
         );
+    }
+
+    private static IReadOnlyList<string> GetCategoryTrail(HtmlDocument document, string productName)
+    {
+        var jsonLdTrail = GetCategoryTrailFromJsonLd(document, productName);
+
+        if (jsonLdTrail.Count > 0)
+        {
+            return jsonLdTrail;
+        }
+
+        return document.DocumentNode
+            .SelectNodes(
+                "//*[contains(concat(' ', normalize-space(@class), ' '), ' breadcrumbs__item ') or @itemprop='name']"
+            )
+            ?.Select(node => HtmlEntity.DeEntitize(node.InnerText).Trim())
+            .Where(value => IsWoolworthsCategoryCrumb(value, productName))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList()
+            ?? [];
+    }
+
+    private static IReadOnlyList<string> GetCategoryTrailFromJsonLd(HtmlDocument document, string productName)
+    {
+        var schemaJson = HtmlScrapingHelper.GetOptionalText(
+            document,
+            "//*[@type='application/ld+json' and contains(., 'BreadcrumbList')]"
+        );
+
+        if (string.IsNullOrWhiteSpace(schemaJson))
+        {
+            return [];
+        }
+
+        using var schemaDocument = JsonDocument.Parse(schemaJson);
+        var root = schemaDocument.RootElement;
+
+        if (!root.TryGetProperty("itemListElement", out var items) || items.ValueKind != JsonValueKind.Array)
+        {
+            return [];
+        }
+
+        return items
+            .EnumerateArray()
+            .Select(item => HtmlScrapingHelper.GetOptionalJsonString(item, "name"))
+            .OfType<string>()
+            .Where(value => IsWoolworthsCategoryCrumb(value, productName))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+    }
+
+    private static bool IsWoolworthsCategoryCrumb(string? value, string productName)
+    {
+        return !string.IsNullOrWhiteSpace(value)
+            && !value.Equals("Home", StringComparison.OrdinalIgnoreCase)
+            && !value.Equals("Shop", StringComparison.OrdinalIgnoreCase)
+            && !value.Equals(productName, StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool IsOnSpecial(HtmlDocument document)

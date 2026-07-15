@@ -19,6 +19,8 @@ public class AppDbContext : IdentityDbContext
     public DbSet<ScrapeTask> ScrapeTasks => Set<ScrapeTask>();
     public DbSet<Notification> Notifications => Set<Notification>();
     public DbSet<AlertRule> AlertRules => Set<AlertRule>();
+    public DbSet<ProductCategory> ProductCategories => Set<ProductCategory>();
+    public DbSet<StoreProductCategory> StoreProductCategories => Set<StoreProductCategory>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -26,6 +28,17 @@ public class AppDbContext : IdentityDbContext
 
         modelBuilder.Entity<StoreProduct>()
             .HasIndex(x => x.ProductUrl)
+            .IsUnique();
+
+        modelBuilder.Entity<ProductCategory>()
+            .HasIndex(x => new { x.Store, x.ParentCategoryId, x.NormalizedName })
+            .IsUnique();
+
+        modelBuilder.Entity<StoreProductCategory>()
+            .HasKey(x => new { x.StoreProductId, x.ProductCategoryId });
+
+        modelBuilder.Entity<StoreProductCategory>()
+            .HasIndex(x => new { x.StoreProductId, x.Depth })
             .IsUnique();
 
         modelBuilder.Entity<Watchlist>()

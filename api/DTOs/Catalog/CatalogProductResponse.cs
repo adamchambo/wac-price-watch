@@ -9,8 +9,16 @@ public record CatalogProductResponse(
     string? Brand,
     string? SizeLabel,
     string? ImageUrl,
+    CatalogCategoryResponse? Category,
+    IReadOnlyList<CatalogCategoryResponse> CategoryTrail,
     decimal? CurrentPrice,
     bool IsOnSpecial,
     ProductStatus Status,
     bool IsWatchlisted
+);
+
+public record CatalogCategoryResponse(
+    Guid Id,
+    string Name,
+    int Depth
 );

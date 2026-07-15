@@ -52,6 +52,8 @@ public class WatchlistService : IWatchlistService
 
         var items = await itemsQuery
             .Include(i => i.BaseStoreProduct)
+                .ThenInclude(product => product!.Categories)
+                    .ThenInclude(category => category.ProductCategory)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync(cancellationToken);
@@ -74,8 +76,12 @@ public class WatchlistService : IWatchlistService
                 i.RemovedAt == null
             )
             .Include(i => i.BaseStoreProduct)
+                .ThenInclude(product => product!.Categories)
+                    .ThenInclude(category => category.ProductCategory)
             .Include(i => i.Matches)
                 .ThenInclude(m => m.StoreProduct)
+                    .ThenInclude(product => product!.Categories)
+                        .ThenInclude(category => category.ProductCategory)
             .FirstOrDefaultAsync(cancellationToken);
 
         if (watchlistItem is null) return null;
@@ -159,9 +165,12 @@ public class WatchlistService : IWatchlistService
         product.UpdatedAt = now;
 
         await _dbContext.SaveChangesAsync(cancellationToken);
+        await ReplaceProductCategoriesAsync(product, store, scrapedProduct.CategoryTrail, cancellationToken);
 
         var watchlistItem = await _dbContext.WatchlistItems
             .Include(item => item.BaseStoreProduct)
+                .ThenInclude(product => product!.Categories)
+                    .ThenInclude(category => category.ProductCategory)
             .FirstOrDefaultAsync(
                 item =>
                     item.WatchlistId == watchlist.Id &&
@@ -244,5 +253,75 @@ public class WatchlistService : IWatchlistService
         await _dbContext.SaveChangesAsync(cancellationToken);
 
         return watchlist;
+    }
+
+    private async Task ReplaceProductCategoriesAsync(
+        StoreProduct product,
+        Store store,
+        IReadOnlyList<string> categoryTrail,
+        CancellationToken cancellationToken
+    )
+    {
+        var existingLinks = await _dbContext.StoreProductCategories
+            .Where(category => category.StoreProductId == product.Id)
+            .ToListAsync(cancellationToken);
+
+        _dbContext.StoreProductCategories.RemoveRange(existingLinks);
+
+        ProductCategory? parentCategory = null;
+        var depth = 0;
+
+        foreach (var rawCategoryName in categoryTrail)
+        {
+            var categoryName = rawCategoryName.Trim();
+
+            if (string.IsNullOrWhiteSpace(categoryName))
+            {
+                continue;
+            }
+
+            var normalizedName = NormalizeCategoryName(categoryName);
+            var parentCategoryId = parentCategory?.Id;
+            var category = await _dbContext.ProductCategories
+                .FirstOrDefaultAsync(
+                    existingCategory =>
+                        existingCategory.Store == store &&
+                        existingCategory.ParentCategoryId == parentCategoryId &&
+                        existingCategory.NormalizedName == normalizedName,
+                    cancellationToken
+                );
+
+            if (category is null)
+            {
+                category = new ProductCategory
+                {
+                    Id = Guid.NewGuid(),
+                    Store = store,
+                    Name = categoryName,
+                    NormalizedName = normalizedName,
+                    ParentCategoryId = parentCategoryId
+                };
+
+                _dbContext.ProductCategories.Add(category);
+                await _dbContext.SaveChangesAsync(cancellationToken);
+            }
+
+            _dbContext.StoreProductCategories.Add(new StoreProductCategory
+            {
+                StoreProductId = product.Id,
+                ProductCategoryId = category.Id,
+                Depth = depth
+            });
+
+            parentCategory = category;
+            depth++;
+        }
+
+        await _dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    private static string NormalizeCategoryName(string categoryName)
+    {
+        return categoryName.Trim().ToUpperInvariant();
     }
 }
