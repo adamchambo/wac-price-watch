@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Bell, Heart, Search, Settings } from "lucide-react";
+import { Heart, Search, Settings } from "lucide-react";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -13,7 +13,6 @@ import { cn } from "@/lib/utils";
 const navItems = [
 	{ href: "/catalog", label: "Catalog", icon: Search },
 	{ href: "/watchlists", label: "Watchlist", icon: Heart },
-	{ href: "/alerts", label: "Alerts", icon: Bell },
 	{ href: "/settings", label: "Settings", icon: Settings },
 ];
 
@@ -30,7 +29,7 @@ export function AppShell({ children }: Readonly<{ children: React.ReactNode }>) 
 						<span className="text-base font-black tracking-tight">WAC Price Watch</span>
 					</Link>
 					<nav className="hidden items-center gap-1 md:flex">
-						{navItems.slice(0, 3).map((item) => (
+						{navItems.map((item) => (
 							<Link
 								key={item.href}
 								className={cn(
@@ -64,7 +63,7 @@ export function AppShell({ children }: Readonly<{ children: React.ReactNode }>) 
 				{children}
 			</main>
 			<nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-card md:hidden">
-				<div className="grid h-16 grid-cols-4">
+				<div className="grid h-16 grid-cols-3">
 					{navItems.map((item) => {
 						const Icon = item.icon;
 						const isActive = pathname.startsWith(item.href);
