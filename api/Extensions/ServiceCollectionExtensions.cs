@@ -35,6 +35,8 @@ public static class ServiceCollectionExtensions
 
         services.Configure<CatalogSyncOptions>(
             configuration.GetSection("CatalogSync"));
+        services.Configure<RecurringJobScheduleOptions>(
+            configuration.GetSection("RecurringJobs"));
 
         services.AddScoped<ICatalogService, CatalogService>();
         services.AddScoped<ICatalogSyncService, CatalogSyncService>();

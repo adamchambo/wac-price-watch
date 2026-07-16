@@ -4,6 +4,8 @@ using api.Services.Watchlist;
 using Hangfire;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using api.Options;
 using Scalar.AspNetCore;
 
 namespace api.Extensions;
@@ -40,47 +42,48 @@ public static class WebApplicationExtensions
             app.UseHangfireDashboard("/hangfire");
         }
 
-        var melbourneTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Australia/Melbourne");
-        var midnightMelbourne = new RecurringJobOptions
+        var scheduleOptions = app.Services
+            .GetRequiredService<IOptions<RecurringJobScheduleOptions>>()
+            .Value;
+
+        var scheduleTimeZone = TimeZoneInfo.FindSystemTimeZoneById(scheduleOptions.TimeZoneId);
+        var recurringJobOptions = new RecurringJobOptions
         {
-            TimeZone = melbourneTimeZone
+            TimeZone = scheduleTimeZone
         };
 
         var recurringJobs = app.Services.GetRequiredService<IRecurringJobManager>();
 
+        recurringJobs.RemoveIfExists("watchlist-price-check-coles");
+        recurringJobs.RemoveIfExists("watchlist-price-check-woolworths");
+        recurringJobs.RemoveIfExists("watchlist-price-check-aldi");
+
         recurringJobs.AddOrUpdate<ICatalogSyncService>(
             "catalog-sitemap-sync-coles",
             service => service.QueueCatalogSitemapSyncAsync(Store.Coles, CancellationToken.None),
-            Cron.Daily(0, 0),
-            midnightMelbourne
+            scheduleOptions.CatalogSitemapSyncCron,
+            recurringJobOptions
         );
 
         recurringJobs.AddOrUpdate<ICatalogSyncService>(
             "catalog-sitemap-sync-woolworths",
             service => service.QueueCatalogSitemapSyncAsync(Store.Woolworths, CancellationToken.None),
-            Cron.Daily(0, 0),
-            midnightMelbourne
+            scheduleOptions.CatalogSitemapSyncCron,
+            recurringJobOptions
         );
 
-        recurringJobs.AddOrUpdate<IWatchlistPriceCheckService>(
-            "watchlist-price-check-coles",
-            service => service.QueueWatchlistPriceCheckAsync(Store.Coles, CancellationToken.None),
-            Cron.Daily(0, 0),
-            midnightMelbourne
+        recurringJobs.AddOrUpdate<ICatalogSyncService>(
+            "catalog-sync-coles",
+            service => service.QueueCatalogSyncAsync(Store.Coles, CancellationToken.None),
+            scheduleOptions.CatalogSyncCron,
+            recurringJobOptions
         );
 
-        recurringJobs.AddOrUpdate<IWatchlistPriceCheckService>(
-            "watchlist-price-check-woolworths",
-            service => service.QueueWatchlistPriceCheckAsync(Store.Woolworths, CancellationToken.None),
-            Cron.Daily(0, 0),
-            midnightMelbourne
-        );
-
-        recurringJobs.AddOrUpdate<IWatchlistPriceCheckService>(
-            "watchlist-price-check-aldi",
-            service => service.QueueWatchlistPriceCheckAsync(Store.Aldi, CancellationToken.None),
-            Cron.Daily(0, 0),
-            midnightMelbourne
+        recurringJobs.AddOrUpdate<ICatalogSyncService>(
+            "catalog-sync-woolworths",
+            service => service.QueueCatalogSyncAsync(Store.Woolworths, CancellationToken.None),
+            scheduleOptions.CatalogSyncCron,
+            recurringJobOptions
         );
 
         return app;

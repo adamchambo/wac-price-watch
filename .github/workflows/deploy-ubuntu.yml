@@ -105,6 +105,9 @@ jobs:
 
             export ConnectionStrings__DefaultConnection="${{ secrets.CONNECTION_STRING }}"
             export ASPNETCORE_URLS="${{ secrets.ASPNETCORE_URLS || 'http://localhost:5204' }}"
+            export RecurringJobs__TimeZoneId="${{ vars.RECURRING_JOBS_TIME_ZONE_ID || 'Australia/Melbourne' }}"
+            export RecurringJobs__CatalogSitemapSyncCron="${{ vars.RECURRING_JOBS_CATALOG_SITEMAP_SYNC_CRON || '0 0 1 * *' }}"
+            export RecurringJobs__CatalogSyncCron="${{ vars.RECURRING_JOBS_CATALOG_SYNC_CRON || '0 0 * * 0' }}"
             dotnet restore api/api.csproj
             dotnet ef database update --project api/api.csproj --verbose
             dotnet publish api/api.csproj --configuration Release --output api/publish
