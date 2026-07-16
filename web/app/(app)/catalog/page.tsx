@@ -1,3 +1,3 @@
-export default function CatalogPage() {
-	return <main>Catalog</main>;
-}
+import { CatalogPage } from "@/views/catalog/catalog-page";
+
+export default CatalogPage;
