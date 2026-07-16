@@ -2,6 +2,10 @@ plan.md
 planning
 .pnpm-store/
 
+# Local environment files
+.env
+.env.*
+
 # .NET build output
 **/bin/
 **/obj/
