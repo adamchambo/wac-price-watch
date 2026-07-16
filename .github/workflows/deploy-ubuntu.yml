@@ -1,0 +1,128 @@
+name: Deploy to Ubuntu
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: true
+
+jobs:
+  api-check:
+    name: Check API
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: api
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore API
+        run: dotnet restore api.csproj
+
+      - name: Build API
+        run: dotnet build api.csproj --configuration Release --no-restore
+
+  web-check:
+    name: Build web app
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: web
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: web/pnpm-lock.yaml
+
+      - name: Install web dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint web app
+        run: CI=true pnpm lint
+
+      - name: Typecheck web app
+        run: pnpm tsc --noEmit
+
+      - name: Build web app
+        run: pnpm build
+        env:
+          NEXT_PUBLIC_API_BASE_URL: ${{ secrets.NEXT_PUBLIC_API_BASE_URL }}
+
+  deploy:
+    name: Deploy on Ubuntu server
+    runs-on: ubuntu-latest
+    needs:
+      - api-check
+      - web-check
+
+    steps:
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          port: ${{ secrets.SERVER_PORT }}
+          script: |
+            set -e
+
+            export PATH="$PATH:$HOME/.dotnet/tools"
+
+            cd ~/apps/wac-price-watch
+
+            git fetch origin master
+            git checkout master
+            git pull --ff-only origin master
+
+            dotnet tool install --global dotnet-ef || dotnet tool update --global dotnet-ef
+
+            export ConnectionStrings__DefaultConnection="${{ secrets.CONNECTION_STRING }}"
+            export ASPNETCORE_URLS="${{ secrets.ASPNETCORE_URLS || 'http://localhost:5204' }}"
+            dotnet restore api/api.csproj
+            dotnet ef database update --project api/api.csproj --verbose
+            dotnet publish api/api.csproj --configuration Release --output api/publish
+
+            corepack enable
+            corepack prepare pnpm@11 --activate
+
+            cd web
+            export NEXT_PUBLIC_API_BASE_URL="${{ secrets.NEXT_PUBLIC_API_BASE_URL }}"
+            pnpm install --frozen-lockfile
+            pnpm build
+
+            pm2 restart wac-price-watch-api || pm2 start "dotnet api.dll" \
+              --name wac-price-watch-api \
+              --cwd ~/apps/wac-price-watch/api/publish
+
+            pm2 restart wac-price-watch-web || pm2 start "pnpm start" \
+              --name wac-price-watch-web \
+              --cwd ~/apps/wac-price-watch/web
+
+            pm2 save
