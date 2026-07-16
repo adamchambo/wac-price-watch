@@ -1,6 +1,11 @@
-import Link from "next/link";
-import { ArrowLeft, Check, ExternalLink, LinkIcon, Plus, Trash2 } from "lucide-react";
+"use client";
 
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { ArrowLeft, ExternalLink, LinkIcon, Plus, Trash2 } from "lucide-react";
+
+import { Notice } from "@/components/feedback/notice";
+import { StatePanel } from "@/components/feedback/state-panel";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -10,18 +15,27 @@ import { StoreLogo } from "@/features/products/components/store-logo";
 import {
 	formatCurrency,
 	getMatchForStore,
-	getProductByRouteId,
 	getStoreTheme,
-	getWatchlistItemByRouteId,
-	selectedProduct,
 	storeNames,
 	stores,
-	type CatalogProductMock,
-	type WatchlistItemMatchMock,
 } from "@/features/products/lib/mock-data";
+import { useSelectedStore } from "@/features/stores/store-context";
+import {
+	deleteApiWatchlistsItemsWatchlistItemId,
+	getApiCatalogProductId,
+	getApiWatchlistsStoreItemsWatchlistItemId,
+	postApiWatchlistsStoreItems,
+	type CatalogProductDetailsResponse,
+	type CatalogProductResponse,
+	type PriceSnapshotResponse,
+	type WatchlistItemMatchResponse,
+	type WatchlistItemResponse,
+} from "@/lib/api/generated/api";
+import { getApiErrorMessage, unwrapApiData } from "@/lib/api/response";
 import { cn } from "@/lib/utils";
 
 const productVariantStores = [stores.Coles, stores.Aldi, stores.Woolworths];
+type ProductLike = CatalogProductResponse | CatalogProductDetailsResponse;
 
 export function ProductDetailPage({
 	routeId,
@@ -30,19 +44,140 @@ export function ProductDetailPage({
 	routeId?: string;
 	source?: "catalog" | "watchlist";
 }) {
-	const watchlistItem = source === "watchlist" ? getWatchlistItemByRouteId(routeId ?? "") : null;
-	const product = watchlistItem?.baseProduct ?? getProductByRouteId(routeId ?? selectedProduct.routeId);
-	const details = product.routeId === selectedProduct.routeId ? selectedProduct : { ...selectedProduct, ...product };
+	const { selectedStoreId } = useSelectedStore();
+	const [productDetails, setProductDetails] = useState<CatalogProductDetailsResponse | null>(null);
+	const [watchlistItem, setWatchlistItem] = useState<WatchlistItemResponse | null>(null);
+	const [isLoading, setIsLoading] = useState(true);
+	const [isMutatingWatchlist, setIsMutatingWatchlist] = useState(false);
+	const [errorMessage, setErrorMessage] = useState<string | null>(null);
 	const backHref = source === "watchlist" ? "/watchlists" : "/catalog";
+
+	useEffect(() => {
+		let isMounted = true;
+
+		if (source === "watchlist") {
+			getApiWatchlistsStoreItemsWatchlistItemId(selectedStoreId, routeId ?? "")
+				.then((response) => {
+				if (!isMounted) return;
+
+					const item = unwrapApiData<WatchlistItemResponse>(response);
+					setWatchlistItem(item);
+					setProductDetails(toDetailsResponse(item.baseProduct, []));
+					setErrorMessage(null);
+				})
+				.catch((error) => {
+					if (isMounted) {
+						setProductDetails(null);
+						setWatchlistItem(null);
+						setErrorMessage(getApiErrorMessage(error, "Could not load product."));
+					}
+				})
+				.finally(() => {
+					if (isMounted) {
+						setIsLoading(false);
+					}
+				});
+		} else {
+			getApiCatalogProductId(routeId ?? "")
+				.then((response) => {
+					if (!isMounted) return;
+
+					setWatchlistItem(null);
+					setProductDetails(unwrapApiData<CatalogProductDetailsResponse>(response));
+					setErrorMessage(null);
+				})
+				.catch((error) => {
+					if (isMounted) {
+						setProductDetails(null);
+						setWatchlistItem(null);
+						setErrorMessage(getApiErrorMessage(error, "Could not load product."));
+					}
+				})
+				.finally(() => {
+					if (isMounted) {
+						setIsLoading(false);
+					}
+				});
+		}
+
+		return () => {
+			isMounted = false;
+		};
+	}, [routeId, selectedStoreId, source]);
+
+	const product = watchlistItem?.baseProduct ?? productDetails;
 	const aldiMatch = watchlistItem ? getMatchForStore(watchlistItem, stores.Aldi) : undefined;
 	const woolworthsMatch = watchlistItem ? getMatchForStore(watchlistItem, stores.Woolworths) : undefined;
-	const prices = details.priceHistory.map((point) => Number(point.price ?? 0));
-	const lowest = Math.min(...prices);
-	const highest = Math.max(...prices);
-	const average = prices.reduce((sum, price) => sum + price, 0) / prices.length;
+	const priceHistory = productDetails?.priceHistory ?? [];
+	const prices = priceHistory.map((point) => Number(point.price ?? 0));
+	const fallbackPrice = Number(product?.currentPrice ?? 0);
+	const priceValues = prices.length > 0 ? prices : [fallbackPrice];
+	const lowest = Math.min(...priceValues);
+	const highest = Math.max(...priceValues);
+	const average = priceValues.reduce((sum, price) => sum + price, 0) / priceValues.length;
+
+	async function handleAddToWatchlist() {
+		if (!product) return;
+
+		setIsMutatingWatchlist(true);
+		setErrorMessage(null);
+
+		try {
+			const item = unwrapApiData<WatchlistItemResponse>(
+				await postApiWatchlistsStoreItems(selectedStoreId, {
+					storeProductId: product.id,
+					displayName: product.name,
+				}),
+			);
+			setWatchlistItem(item);
+		} catch (error) {
+			setErrorMessage(getApiErrorMessage(error, "Could not add product to watchlist."));
+		} finally {
+			setIsMutatingWatchlist(false);
+		}
+	}
+
+	async function handleDeleteFromWatchlist() {
+		if (!watchlistItem) return;
+
+		setIsMutatingWatchlist(true);
+		setErrorMessage(null);
+
+		try {
+			await deleteApiWatchlistsItemsWatchlistItemId(watchlistItem.id);
+			setWatchlistItem(null);
+		} catch (error) {
+			setErrorMessage(getApiErrorMessage(error, "Could not remove product from watchlist."));
+		} finally {
+			setIsMutatingWatchlist(false);
+		}
+	}
+
+	if (isLoading) {
+		return (
+			<div className="mx-auto max-w-7xl px-6 py-6 pb-16 lg:px-8 md:pb-6">
+				<StatePanel>Loading product...</StatePanel>
+			</div>
+		);
+	}
+
+	if (!product) {
+		return (
+			<div className="mx-auto max-w-7xl px-6 py-6 pb-16 lg:px-8 md:pb-6">
+				<Link className="mb-6 inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground" href={backHref}>
+					<ArrowLeft className="h-4 w-4" />
+					Back to {source === "watchlist" ? "watchlist" : "results"}
+				</Link>
+				<Notice variant="error">{errorMessage ?? "Product not found."}</Notice>
+			</div>
+		);
+	}
 
 	return (
 		<div className="mx-auto max-w-7xl px-6 py-6 pb-16 lg:px-8 md:pb-6">
+			{errorMessage ? (
+				<Notice className="mb-4" variant="error">{errorMessage}</Notice>
+			) : null}
 			<Link className="mb-6 inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground" href={backHref}>
 				<ArrowLeft className="h-4 w-4" />
 				Back to {source === "watchlist" ? "watchlist" : "results"}
@@ -52,7 +187,8 @@ export function ProductDetailPage({
 					<CardContent className="p-6">
 						<div className="grid gap-6 md:grid-cols-[144px_minmax(0,1fr)_auto] md:items-start">
 							<ProductImage
-								imageKey={product.imageKey}
+								imageUrl={product.imageUrl}
+								label={product.brand ?? product.name}
 								alt={product.name}
 								className="h-36"
 							/>
@@ -64,27 +200,29 @@ export function ProductDetailPage({
 									<h1 className="mt-1 text-xl font-semibold tracking-tight">{product.name}</h1>
 									<p className="mt-1 text-base text-muted-foreground">{product.sizeLabel}</p>
 								</div>
-								<a
-									className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
-									href={details.productUrl}
-								>
-									<LinkIcon className="h-4 w-4" />
-									View on Coles
-									<ExternalLink className="h-4 w-4" />
-								</a>
+								{productDetails?.productUrl ? (
+									<a
+										className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
+										href={productDetails.productUrl}
+									>
+										<LinkIcon className="h-4 w-4" />
+										View on {storeNames[product.store]}
+										<ExternalLink className="h-4 w-4" />
+									</a>
+								) : null}
 							</div>
 							<div className="flex flex-col items-start gap-3 md:items-end md:text-right">
 								<p className="text-3xl font-semibold leading-none">{formatCurrency(product.currentPrice)}</p>
 								<p className="text-sm text-muted-foreground">Checked 1 day ago</p>
-								{!watchlistItem ? (
-									<Button size="sm">
-										<Check className="h-4 w-4" />
-										{product.isWatchlisted ? "In Watchlist" : "Add to watchlist"}
+								{watchlistItem ? (
+									<Button size="sm" variant="destructive" disabled={isMutatingWatchlist} onClick={handleDeleteFromWatchlist}>
+										<Trash2 className="h-4 w-4" />
+										{isMutatingWatchlist ? "Removing..." : "Delete from watchlist"}
 									</Button>
 								) : (
-									<Button size="sm" variant="destructive">
-										<Trash2 className="h-4 w-4" />
-										Delete from watchlist
+									<Button size="sm" disabled={isMutatingWatchlist} onClick={handleAddToWatchlist}>
+										<Plus className="h-4 w-4" />
+										{isMutatingWatchlist ? "Adding..." : "Add to watchlist"}
 									</Button>
 								)}
 							</div>
@@ -114,7 +252,7 @@ export function ProductDetailPage({
 						})}
 					</CardContent>
 				</Card>
-				<PriceHistoryChart data={details.priceHistory} className="lg:col-span-12" />
+				<PriceHistoryChart data={priceHistory} className="lg:col-span-12" />
 			</div>
 		</div>
 	);
@@ -167,8 +305,8 @@ function ProductVariantCard({
 	isBase,
 }: {
 	store: typeof stores.Coles | typeof stores.Aldi | typeof stores.Woolworths;
-	product?: CatalogProductMock;
-	match?: WatchlistItemMatchMock;
+	product?: ProductLike;
+	match?: WatchlistItemMatchResponse;
 	isBase?: boolean;
 }) {
 	const theme = getStoreTheme(store, Boolean(product));
@@ -188,11 +326,24 @@ function ProductVariantCard({
 			{product ? (
 				<p className={cn("shrink-0 text-sm font-semibold", isBase && theme.textClassName)}>{formatCurrency(product.currentPrice)}</p>
 			) : (
-				<Button size="sm" variant="outline">
+				<Button size="sm" variant="outline" disabled title="Match management is not available yet.">
 					<Plus className="h-4 w-4" />
 					Find match
 				</Button>
 			)}
 		</div>
 	);
+}
+
+function toDetailsResponse(
+	product: CatalogProductResponse,
+	priceHistory: PriceSnapshotResponse[],
+): CatalogProductDetailsResponse {
+	return {
+		...product,
+		productUrl: "",
+		storeSku: null,
+		lastCheckedAt: null,
+		priceHistory,
+	};
 }

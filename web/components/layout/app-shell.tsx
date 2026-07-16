@@ -3,11 +3,13 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 import { Heart, Search, Settings } from "lucide-react";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useSelectedStore, type StoreSlug } from "@/features/stores/store-context";
+import { getManageInfo } from "@/lib/api/generated/api";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -19,6 +21,28 @@ const navItems = [
 export function AppShell({ children }: Readonly<{ children: React.ReactNode }>) {
 	const pathname = usePathname();
 	const { selectedStore, selectedStoreTheme, setSelectedStore } = useSelectedStore();
+	const [email, setEmail] = useState<string | null>(null);
+	const profileInitial = useMemo(() => getEmailInitial(email), [email]);
+
+	useEffect(() => {
+		let isMounted = true;
+
+		getManageInfo()
+			.then((response) => {
+				if (isMounted) {
+					setEmail(getInfoEmail(response));
+				}
+			})
+			.catch(() => {
+				if (isMounted) {
+					setEmail(null);
+				}
+			});
+
+		return () => {
+			isMounted = false;
+		};
+	}, []);
 
 	return (
 		<div data-store={selectedStore} style={selectedStoreTheme} className="min-h-screen bg-[var(--shell)] text-foreground">
@@ -44,17 +68,17 @@ export function AppShell({ children }: Readonly<{ children: React.ReactNode }>) 
 					</nav>
 					<div className="ml-auto flex items-center gap-3">
 						<Select value={selectedStore} onValueChange={(value) => setSelectedStore(value as StoreSlug)}>
-							<SelectTrigger className="w-28">
+							<SelectTrigger className="w-28 border-accent bg-accent text-accent-foreground hover:bg-primary hover:text-primary-foreground">
 								<SelectValue />
 							</SelectTrigger>
-							<SelectContent>
-								<SelectItem value="coles">Coles</SelectItem>
-								<SelectItem value="aldi">Aldi</SelectItem>
-								<SelectItem value="woolworths">Woolworths</SelectItem>
+							<SelectContent className="border-accent">
+								<SelectItem className="focus:bg-accent focus:text-accent-foreground" value="coles">Coles</SelectItem>
+								<SelectItem className="focus:bg-accent focus:text-accent-foreground" value="aldi">Aldi</SelectItem>
+								<SelectItem className="focus:bg-accent focus:text-accent-foreground" value="woolworths">Woolworths</SelectItem>
 							</SelectContent>
 						</Select>
 						<Avatar>
-							<AvatarFallback>JD</AvatarFallback>
+							<AvatarFallback>{profileInitial}</AvatarFallback>
 						</Avatar>
 					</div>
 				</div>
@@ -86,4 +110,22 @@ export function AppShell({ children }: Readonly<{ children: React.ReactNode }>) 
 			</nav>
 		</div>
 	);
+}
+
+function getEmailInitial(email: string | null) {
+	const firstCharacter = email?.trim().charAt(0);
+
+	return firstCharacter ? firstCharacter.toUpperCase() : "?";
+}
+
+function getInfoEmail(response: Awaited<ReturnType<typeof getManageInfo>>) {
+	if ("email" in response) {
+		return String(response.email);
+	}
+
+	if ("data" in response && response.data && "email" in response.data) {
+		return String(response.data.email);
+	}
+
+	return null;
 }

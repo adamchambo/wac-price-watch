@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BarChart3, MoreVertical, Plus } from "lucide-react";
+import { BarChart3, MoreVertical, Plus, Trash2 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -21,10 +21,18 @@ import {
 	getMatchForStore,
 	storeNames,
 	stores,
-	watchlist,
 } from "@/features/products/lib/mock-data";
+import type { WatchlistItemResponse } from "@/lib/api/generated/api";
 
-export function WatchlistComparisonTable() {
+export function WatchlistComparisonTable({
+	items,
+	deletingItemId,
+	onDeleteItem,
+}: {
+	items: WatchlistItemResponse[];
+	deletingItemId?: string | null;
+	onDeleteItem?: (item: WatchlistItemResponse) => void;
+}) {
 	return (
 		<Card className="h-full overflow-hidden border-primary/10 bg-card shadow-sm">
 			<Table>
@@ -40,11 +48,11 @@ export function WatchlistComparisonTable() {
 					</TableRow>
 				</TableHeader>
 				<TableBody>
-					{watchlist.items.map((item) => {
+					{items.map((item) => {
 						const aldiMatch = getMatchForStore(item, stores.Aldi);
 						const woolworthsMatch = getMatchForStore(item, stores.Woolworths);
 						const best = getLowestMatchPrice(item);
-						const detailHref = `/watchlists/${item.baseProduct.routeId}`;
+						const detailHref = `/watchlists/${item.id}`;
 
 						return (
 							<TableRow key={item.id}>
@@ -52,7 +60,8 @@ export function WatchlistComparisonTable() {
 									<Link className="flex items-center gap-3" href={detailHref}>
 										<ProductImage
 											alt={item.displayName}
-											imageKey={item.baseProduct.imageKey}
+											imageUrl={item.baseProduct.imageUrl}
+											label={item.baseProduct.brand ?? item.displayName}
 											className="h-12 w-14"
 										/>
 										<div>
@@ -125,6 +134,15 @@ export function WatchlistComparisonTable() {
 										</Link>
 										<Button size="icon" variant="outline">
 											<MoreVertical className="h-4 w-4" />
+										</Button>
+										<Button
+											size="icon"
+											variant="outline"
+											disabled={deletingItemId === item.id}
+											aria-label={`Delete ${item.displayName}`}
+											onClick={() => onDeleteItem?.(item)}
+										>
+											<Trash2 className="h-4 w-4" />
 										</Button>
 									</div>
 								</TableCell>

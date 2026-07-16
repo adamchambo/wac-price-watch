@@ -494,11 +494,11 @@ export function getWatchlistItemByRouteId(routeId: string) {
 	return watchlistItems.find((item) => item.baseProduct.routeId === routeId || item.id === routeId) ?? watchlistItems[0];
 }
 
-export function getMatchForStore(item: WatchlistItemMock, store: Store) {
+export function getMatchForStore(item: WatchlistItemResponse, store: Store) {
 	return item.matches.find((match) => match.product.store === store);
 }
 
-export function getLowestMatchPrice(item: WatchlistItemMock) {
+export function getLowestMatchPrice(item: WatchlistItemResponse) {
 	const products = [item.baseProduct, ...item.matches.map((match) => match.product)];
 
 	return products.reduce((lowest, product) => {

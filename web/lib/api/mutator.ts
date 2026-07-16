@@ -17,7 +17,8 @@ export async function apiMutator<T>(
 	});
 
 	if (!response.ok) {
-		throw new Error(`API request failed with status ${response.status}`);
+		const errorBody = await response.text();
+		throw new Error(getApiErrorMessage(response.status, errorBody));
 	}
 
 	if (response.status === 204) {
@@ -31,4 +32,27 @@ export async function apiMutator<T>(
 	}
 
 	return JSON.parse(body) as T;
+}
+
+function getApiErrorMessage(status: number, body: string) {
+	if (!body) return `API request failed with status ${status}`;
+
+	try {
+		const parsedBody = JSON.parse(body) as {
+			detail?: string;
+			title?: string;
+			errors?: Record<string, string[]>;
+		};
+		const validationMessages = parsedBody.errors
+			? Object.values(parsedBody.errors).flat()
+			: [];
+
+		if (validationMessages.length > 0) {
+			return validationMessages.join(" ");
+		}
+
+		return parsedBody.detail ?? parsedBody.title ?? `API request failed with status ${status}`;
+	} catch {
+		return body;
+	}
 }

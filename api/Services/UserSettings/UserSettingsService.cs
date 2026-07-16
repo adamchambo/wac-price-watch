@@ -32,6 +32,11 @@ public class UserSettingsService : IUserSettingsService
         var settings = await InitialiseUserSettings(userId, cancellationToken);
 
         settings.DefaultStore = request.DefaultStore;
+        settings.PriceCheckFrequency = request.PriceCheckFrequency;
+        settings.PriceCheckTimeOfDay = request.PriceCheckTimeOfDay;
+        settings.PriceCheckTimezone = request.PriceCheckTimezone;
+        settings.PriceCheckDayOfWeek = request.PriceCheckDayOfWeek;
+        settings.BlockedPriceCheckDays = request.BlockedPriceCheckDays;
         settings.Theme = request.Theme;
         settings.EmailAlertsEnabled = request.EmailAlertsEnabled;
         settings.SmsAlertsEnabled = request.SmsAlertsEnabled;
