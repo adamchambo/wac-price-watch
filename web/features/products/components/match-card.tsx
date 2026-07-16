@@ -5,14 +5,15 @@ import { Card, CardContent } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { MatchSearchDialog } from "@/features/products/components/match-search-dialog";
 import { StoreLogo } from "@/features/products/components/store-logo";
-import { formatCurrency, stores, type WatchlistItemMatchMock } from "@/features/products/lib/mock-data";
+import { formatCurrency, stores } from "@/features/products/lib/product-utils";
+import type { WatchlistItemMatchResponse } from "@/lib/api/generated/api";
 
 export function MatchCard({
 	store,
 	match,
 }: {
 	store: typeof stores.Aldi | typeof stores.Woolworths;
-	match?: WatchlistItemMatchMock;
+	match?: WatchlistItemMatchResponse;
 }) {
 	const storeName = store === stores.Aldi ? "Aldi" : "Woolworths";
 

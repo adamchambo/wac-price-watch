@@ -4,7 +4,7 @@ import { Check, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ProductImage } from "@/features/products/components/product-image";
-import { formatCurrency, storeNames } from "@/features/products/lib/mock-data";
+import { formatCurrency, storeNames } from "@/features/products/lib/product-utils";
 import type { CatalogProductResponse } from "@/lib/api/generated/api";
 
 export function ProductCard({

@@ -18,7 +18,7 @@ import {
 	getStoreTheme,
 	storeNames,
 	stores,
-} from "@/features/products/lib/mock-data";
+} from "@/features/products/lib/product-utils";
 import { useSelectedStore } from "@/features/stores/store-context";
 import {
 	deleteApiWatchlistsItemsWatchlistItemId,

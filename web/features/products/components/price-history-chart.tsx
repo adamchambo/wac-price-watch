@@ -5,7 +5,7 @@ import { CartesianGrid, Line, LineChart, Tooltip, XAxis, YAxis } from "recharts"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { formatCurrency } from "@/features/products/lib/mock-data";
+import { formatCurrency } from "@/features/products/lib/product-utils";
 import { cn } from "@/lib/utils";
 
 const chartConfig = {

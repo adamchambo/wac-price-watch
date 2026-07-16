@@ -21,7 +21,7 @@ import {
 	getMatchForStore,
 	storeNames,
 	stores,
-} from "@/features/products/lib/mock-data";
+} from "@/features/products/lib/product-utils";
 import type { WatchlistItemResponse } from "@/lib/api/generated/api";
 
 export function WatchlistComparisonTable({

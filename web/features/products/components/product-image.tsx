@@ -1,9 +1,10 @@
 import Image from "next/image";
 
-import type { CatalogProductMock } from "@/features/products/lib/mock-data";
 import { cn } from "@/lib/utils";
 
-const imageLabels: Record<CatalogProductMock["imageKey"], string> = {
+type ProductImageKey = "cola" | "bread" | "milk" | "cereal" | "coffee" | "chips" | "eggs" | "tissue" | "laundry";
+
+const imageLabels: Record<ProductImageKey, string> = {
 	cola: "Cola",
 	bread: "Bread",
 	milk: "Milk",
@@ -23,7 +24,7 @@ export function ProductImage({
 	className,
 }: {
 	alt: string;
-	imageKey?: CatalogProductMock["imageKey"];
+	imageKey?: ProductImageKey;
 	imageUrl?: string | null;
 	label?: string | null;
 	className?: string;

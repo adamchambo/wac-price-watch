@@ -1,6 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { formatCurrency } from "@/features/products/lib/mock-data";
+import { formatCurrency } from "@/features/products/lib/product-utils";
 
 export function PriceStats({
 	current,

@@ -1,7 +1,7 @@
 import Image from "next/image";
 
 import { cn } from "@/lib/utils";
-import type { StoreName } from "@/features/products/lib/mock-data";
+import type { StoreName } from "@/features/products/lib/product-utils";
 
 const storeStyles: Record<StoreName, string> = {
 	Coles: "bg-red-600 text-white",

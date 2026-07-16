@@ -2,7 +2,7 @@
 
 import { createContext, type CSSProperties, useContext, useMemo, useState } from "react";
 
-import { stores, type StoreName } from "@/features/products/lib/mock-data";
+import { stores, type StoreName } from "@/features/products/lib/product-utils";
 import type { Store } from "@/lib/api/generated/api";
 
 export type StoreSlug = "coles" | "aldi" | "woolworths";

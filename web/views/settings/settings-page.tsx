@@ -22,7 +22,7 @@ import {
 	type UserSettingsResponse,
 } from "@/lib/api/generated/api";
 import { apiMutator } from "@/lib/api/mutator";
-import { storeNames, stores } from "@/features/products/lib/mock-data";
+import { storeNames, stores } from "@/features/products/lib/product-utils";
 import { unwrapApiData } from "@/lib/api/response";
 
 function SettingRow({
