@@ -47,7 +47,11 @@ export function getStoreTheme(store: Store, active = false) {
 }
 
 export function formatCurrency(value: number | string | null | undefined) {
-	const numericValue = Number(value ?? 0);
+	if (value == null || value === "") return "Unavailable";
+
+	const numericValue = Number(value);
+
+	if (!Number.isFinite(numericValue) || numericValue <= 0) return "Unavailable";
 
 	return new Intl.NumberFormat("en-AU", {
 		style: "currency",

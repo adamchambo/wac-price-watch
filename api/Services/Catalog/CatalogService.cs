@@ -24,7 +24,13 @@ public class CatalogService : ICatalogService
         var query = _dbContext.StoreProducts
             .Include(p => p.Categories)
                 .ThenInclude(category => category.ProductCategory)
-            .Where(p => p.Store == store && !p.IsRemoved);
+            .Where(p =>
+                p.Store == store
+                && !p.IsRemoved
+                && p.Status == ProductStatus.Active
+                && p.CurrentPrice > 0
+                && p.ImageUrl != null
+                && p.ImageUrl != "");
 
         if (!string.IsNullOrEmpty(searchTerm))
         {

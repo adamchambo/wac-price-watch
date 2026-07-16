@@ -36,12 +36,17 @@ export function CatalogPage() {
 	const [isLoading, setIsLoading] = useState(true);
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
 	const [addingProductId, setAddingProductId] = useState<string | null>(null);
-	const storeProducts = products.filter((product) => product.store === selectedStoreId);
+	const storeProducts = products
+		.filter((product) => product.store === selectedStoreId)
+		.filter(isDisplayReadyProduct);
 	const categoryCounts = useMemo(() => getCatalogCategoryCounts(storeProducts), [storeProducts]);
 	const selectedCategory = catalogCategories.find((category) => category.slug === activeCategory) ?? catalogCategories[0];
 	const filteredProducts = storeProducts
 		.filter(selectedCategory.matches)
 		.filter((product) => matchesSearch(product, searchTerm));
+	const emptyCatalogMessage = storeProducts.length === 0
+		? "Catalog not available."
+		: "No items available.";
 	const totalPages = Math.max(1, Math.ceil(filteredProducts.length / pageSize));
 	const visibleProducts = filteredProducts.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 	const firstVisibleProduct = filteredProducts.length === 0 ? 0 : (currentPage - 1) * pageSize + 1;
@@ -137,7 +142,7 @@ export function CatalogPage() {
 						{isLoading ? (
 							<StatePanel>Loading products...</StatePanel>
 						) : visibleProducts.length === 0 ? (
-							<StatePanel>No products found.</StatePanel>
+							<StatePanel>{emptyCatalogMessage}</StatePanel>
 						) : (
 							<ProductGrid
 								products={visibleProducts}
@@ -167,4 +172,8 @@ function matchesSearch(product: CatalogProductResponse, searchTerm: string) {
 	const searchableText = `${product.name} ${product.brand ?? ""} ${product.sizeLabel ?? ""}`.toLowerCase();
 
 	return searchableText.includes(normalizedSearchTerm);
+}
+
+function isDisplayReadyProduct(product: CatalogProductResponse) {
+	return Boolean(product.imageUrl && product.currentPrice && Number(product.currentPrice) > 0);
 }

@@ -16,6 +16,13 @@ export function ProductCard({
 	isAdding?: boolean;
 	onAdd?: (product: CatalogProductResponse) => void;
 }) {
+	const hasDisplayPrice = product.currentPrice != null && Number(product.currentPrice) > 0;
+	const formattedPrice = formatCurrency(product.currentPrice);
+
+	if (!hasDisplayPrice || !product.imageUrl) {
+		return null;
+	}
+
 	return (
 		<Card className="overflow-hidden bg-card shadow-sm transition-colors hover:border-foreground/20">
 			<CardContent className="p-2">
@@ -28,7 +35,7 @@ export function ProductCard({
 					</Link>
 					<p className="text-xs font-medium text-muted-foreground">{product.sizeLabel}</p>
 					<div className="flex items-end justify-between gap-2 pt-1">
-						<p className="text-lg font-semibold tracking-tight">{formatCurrency(product.currentPrice)}</p>
+						<p className="text-lg font-semibold tracking-tight">{formattedPrice}</p>
 						<p className="text-xs font-medium text-muted-foreground">{storeNames[product.store]}</p>
 					</div>
 				</div>
