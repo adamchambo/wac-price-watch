@@ -114,14 +114,15 @@ jobs:
 
             cd web
             export NEXT_PUBLIC_API_BASE_URL="${{ secrets.NEXT_PUBLIC_API_BASE_URL }}"
+            export PORT=3001
             pnpm install --frozen-lockfile
             pnpm build
 
-            pm2 restart wac-price-watch-api || pm2 start "dotnet api.dll" \
+            pm2 restart wac-price-watch-api --update-env || pm2 start "dotnet api.dll" \
               --name wac-price-watch-api \
               --cwd ~/apps/wac-price-watch/api/publish
 
-            pm2 restart wac-price-watch-web || pm2 start "pnpm start" \
+            pm2 restart wac-price-watch-web --update-env || pm2 start "pnpm start" \
               --name wac-price-watch-web \
               --cwd ~/apps/wac-price-watch/web
 

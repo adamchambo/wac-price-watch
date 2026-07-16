@@ -58,7 +58,10 @@ public static class ServiceCollectionExtensions
             options.AddPolicy("Frontend", policy =>
             {
                 policy
-                    .WithOrigins("http://localhost:3000")
+                    .WithOrigins(
+                        "http://localhost:3000",
+                        "https://pricewatch.adamchamberla.in"
+                    )
                     .AllowAnyHeader()
                     .AllowAnyMethod()
                     .AllowCredentials();
