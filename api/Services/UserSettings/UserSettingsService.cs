@@ -60,8 +60,8 @@ public class UserSettingsService : IUserSettingsService
         settings = new Models.UserSettings
         {
             UserId = userId,
-            CreatedAt = DateTime.Now,
-            UpdatedAt = DateTime.Now
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
         };
 
         _dbContext.UserSettings.Add(settings);
